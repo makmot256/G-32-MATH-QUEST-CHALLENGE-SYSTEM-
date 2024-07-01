@@ -94,7 +94,9 @@ public class Client {
         if (confirm.equalsIgnoreCase("yes")) {
             System.out.println("Participant confirmed successfully!");
         } else if (confirm.equalsIgnoreCase("no")) {
-            System.out.println("Participant rejected and removed successfully!");
+            System.out.print("Reason for rejection: ");
+            String reason = scanner.nextLine();
+            writer.println("confirm no " + username + " " + reason);
         } else {
             System.out.println("Invalid confirmation command.");
         }

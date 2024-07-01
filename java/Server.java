@@ -1,6 +1,8 @@
 import java.io.*;
 import java.net.*;
 import java.sql.*;
+// import java.util.*;
+import java.util.Arrays;
 
 public class Server {
 
@@ -31,7 +33,7 @@ public class Server {
 class ClientHandler extends Thread {
     private final Socket socket;
     private final Connection connection;
-    private final String txtFilePath = "log.txt"; 
+    private final String txtFilePath = "applicants.txt"; 
     public ClientHandler(Socket socket, Connection connection) {
         this.socket = socket;
         this.connection = connection;
@@ -89,7 +91,8 @@ class ClientHandler extends Thread {
         String dob = parts[6];
 
         try {
-            logToTextFile("register " + username + " " + firstName + " " + lastName + " " + schoolRegNumber + " " + email + " " + dob);
+            // logToTextFile("register " + username + " " + firstName + " " + lastName + " " + schoolRegNumber + " " + email + " " + dob);
+            logToTextFile(String.join(" ", parts));
 
             String query = "INSERT INTO participants (username, firstname, lastname, school_registration_number, email, date_of_birth) VALUES (?, ?, ?, ?, ?, ?)";
             PreparedStatement statement = connection.prepareStatement(query);
@@ -143,11 +146,12 @@ class ClientHandler extends Thread {
     private void confirmParticipant(String[] parts, PrintWriter writer) {
         String confirm = parts[1];
         String username = parts[2];
+        String reason = String.join(" ", Arrays.copyOfRange(parts, 3, parts.length));
 
         try {
             if (confirm.equalsIgnoreCase("yes")) {
                 logToTextFile("confirm yes " + username);
-
+              
                 String query = "UPDATE participants SET status = 'confirmed' WHERE username = ?";
                 PreparedStatement statement = connection.prepareStatement(query);
                 statement.setString(1, username);
@@ -156,17 +160,21 @@ class ClientHandler extends Thread {
                 if (rowsUpdated > 0) {
                     writer.println("Participant confirmed successfully!");
                 }
+                // remove username from applicants.txt
+                removeFromFile(username);
             } else if (confirm.equalsIgnoreCase("no")) {
-                logToTextFile("confirm no " + username);
-
-                String query = "DELETE FROM participants WHERE username = ?";
-                PreparedStatement statement = connection.prepareStatement(query);
-                statement.setString(1, username);
-
-                int rowsDeleted = statement.executeUpdate();
-                if (rowsDeleted > 0) {
-                    writer.println("Participant rejected and removed successfully!");
-                }
+                // if (parts.length < 4) {
+                //     writer.println("Error: Reason for rejection not provided.");
+                //     return;
+                // }
+                logToTextFile("confirm no " + username + " " + reason);
+                // Add to rejected table
+                addToRejected(username,reason);
+                // Remove from participants table
+                removeFromParticipants(username);
+                writer.println("Participant rejected successfully with reason: " + reason);
+                // Remove from file
+                removeFromFile(username);
             } else {
                 writer.println("Invalid confirmation command.");
             }
@@ -202,8 +210,46 @@ class ClientHandler extends Thread {
     }
 
     private void logToTextFile(String data) throws IOException {
-        try (BufferedWriter writer = new BufferedWriter(new FileWriter(txtFilePath, true))) {
+        try(BufferedWriter writer = new BufferedWriter(new FileWriter(txtFilePath,true))){
             writer.write(data + System.lineSeparator());
         }
+    }
+
+    private void removeFromFile(String username) throws IOException{
+        File inputFile = new File(txtFilePath);
+        File tempFile = new File("tempApplicants.txt");
+
+        try(BufferedReader reader = new BufferedReader(new FileReader(inputFile));
+            BufferedWriter writer = new BufferedWriter(new FileWriter(tempFile))){
+
+            String line;
+            while((line = reader.readLine())!= null) {
+                if(!line.contains(username)) {
+                    writer.write(line + System.lineSeparator());
+                }
+            }
+        }
+
+        if(!inputFile.delete()){
+            System.err.println("Could not delete original file");
+        }
+        if (!tempFile.renameTo(inputFile)) {
+            System.err.println("Could not rename temporary file");
+        }
+    }
+
+    private void addToRejected(String username,String reason) throws SQLException{
+        String query = "INSERT INTO rejected_participants (username,reason) VALUES (?,?)";
+        PreparedStatement statement = connection.prepareStatement(query);
+        statement.setString(1,username);
+        statement.setString(2,reason);
+        statement.executeUpdate();
+    }
+
+    private void removeFromParticipants(String username) throws SQLException {
+        String query = "DELETE FROM participants WHERE username = ?";
+        PreparedStatement statement = connection.prepareStatement(query);
+        statement.setString(1, username);
+        statement.executeUpdate();
     }
 }

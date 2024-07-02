@@ -66,13 +66,13 @@ class ClientHandler extends Thread {
 
         switch (command) {
             case "register":
-                registerParticipant(parts, writer);
+                registerApplicant(parts, writer);
                 break;
             case "viewChallenges":
                 viewChallenges(writer);
                 break;
             case "confirm":
-                confirmParticipant(parts, writer);
+                confirmApplicant(parts, writer);
                 break;
             case "attemptChallenge":
                 attemptChallenge(new Scanner(reader), writer, Integer.parseInt(parts[1]), Integer.parseInt(parts[2]));
@@ -82,7 +82,7 @@ class ClientHandler extends Thread {
         }
     }
 
-    private void registerParticipant(String[] parts, PrintWriter writer) {
+    private void registerApplicant(String[] parts, PrintWriter writer) {
         String username = parts[1];
         String firstName = parts[2];
         String lastName = parts[3];
@@ -114,11 +114,28 @@ class ClientHandler extends Thread {
         }
     }
 
-    // view applicants
-    // function to shuffle questions
-    // handling email
+    // view applicants for school representative so login school rep then show the menu including view applicants
+    // add the confirm participant solely for school representative
+    // function to shuffle questions/pick randomly from db
+    // handling email(smtp)
+    // login for both participant and school representative
+    // query the many-to-many relationship between challenge and question pivot table and use it to display the questions in each challenge
+    // checking rejected_applicants table when student tries to register
+    // check if status is "accepted/confirmed" before participant logs in
+    // add details/description of each challenge
+    // record every attempt per question and stop attempts after the maximum of 3
+    //  The questions will be presented one by one and each time a question is presented, the number of remaining questions and time are indicated above the question
+    // we need to implement a timer
+    // wrong answer = -3 marks , not sure = 0 marks , correct answer = marks originally assigned(necessitate a marks column on each question)
+    // can use a pivot table to track attempts
+    //  When the time for attempting the question expires, the participant challenge is closed and the participant is given their score and report.
+    // generate report for each participant on close and esepcialy when duration closes. can put it in a dunction that shows scores,time taken for each question and total time for the whole challenge
+
+    
 
     private static void viewChallenges(PrintWriter writer) {
+        // log the participant and their school since their school exists 
+        // send an email immediately to the school representative
         try {
             String query = "SELECT c.id, c.name, c.start_date, c.end_date, c.duration, COUNT(q.id) AS num_questions " +
                            "FROM challenges c " +
@@ -156,7 +173,7 @@ class ClientHandler extends Thread {
         }
     }
     
-    private void confirmParticipant(String[] parts, PrintWriter writer) {
+    private void confirmApplicant(String[] parts, PrintWriter writer) {
         String confirm = parts[1];
         String username = parts[2];
         String reason = String.join(" ", Arrays.copyOfRange(parts, 3, parts.length));
@@ -199,6 +216,9 @@ class ClientHandler extends Thread {
     }
 
     private static void attemptChallenge(Scanner scanner, PrintWriter writer, int challengeId, int participantId) {
+        // TODO: participant can do as many as possible but cannot do more than one at a time.
+        // TODO: add check to see if challenge is valid
+        // TODO: add check to see if user is eligible to participate
         try {
             String query = "SELECT q.id, q.question_text, q.answer, q.marks " +
                            "FROM challenge_question cq " +
@@ -334,7 +354,7 @@ class ClientHandler extends Thread {
     }
 
     private void addToRejected(String username,String reason) throws SQLException{
-        String query = "INSERT INTO rejected_participants (username,reason) VALUES (?,?)";
+        String query = "INSERT INTO rejected_applicants (username,reason) VALUES (?,?)";
         PreparedStatement statement = connection.prepareStatement(query);
         statement.setString(1,username);
         statement.setString(2,reason);

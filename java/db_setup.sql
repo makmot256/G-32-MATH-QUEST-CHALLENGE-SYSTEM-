@@ -21,8 +21,19 @@ CREATE TABLE participants (
     school_registration_number VARCHAR(255),
     email VARCHAR(255) NOT NULL,
     date_of_birth DATE NOT NULL,
-    status ENUM('pending', 'confirmed', 'rejected') DEFAULT 'pending',
+    status VARCHAR(255) NOT NULL DEFAULT 'confirmed',
     FOREIGN KEY (school_registration_number) REFERENCES schools(school_registration_number)
+);
+
+-- Table for Applicants
+CREATE TABLE applicants (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    username VARCHAR(255) UNIQUE NOT NULL,
+    firstname VARCHAR(255) NOT NULL,
+    lastname VARCHAR(255) NOT NULL,
+    school_registration_number VARCHAR(255),
+    email VARCHAR(255) NOT NULL,
+    date_of_birth DATE NOT NULL
 );
 
 -- Table for Challenges
@@ -55,8 +66,8 @@ CREATE TABLE participant_attempts (
     FOREIGN KEY (challenge_id) REFERENCES challenges(id)
 );
 
--- Table for Rejected Participants
-CREATE TABLE rejected_participants (
+-- Table for Rejected Applicants
+CREATE TABLE rejected_applicants (
     id INT AUTO_INCREMENT PRIMARY KEY,
     username VARCHAR(255) NOT NULL,
     reason TEXT NOT NULL

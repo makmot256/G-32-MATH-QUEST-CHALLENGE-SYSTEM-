@@ -36,7 +36,7 @@ public class Client {
                         viewChallenges(writer);
                         break;
                     case "3":
-                        confirmParticipant(scanner, writer);
+                        confirmApplicant(scanner, writer);
                         break;
                     case "4":
                         attemptChallenge(scanner, writer,reader);
@@ -83,7 +83,7 @@ public class Client {
         writer.println("viewChallenges");
     }
 
-    private static void confirmParticipant(Scanner scanner, PrintWriter writer) {
+    private static void confirmApplicant(Scanner scanner, PrintWriter writer) {
         System.out.print("Username: ");
         String username = scanner.nextLine();
         System.out.print("Confirm (yes/no): ");

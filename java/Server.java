@@ -1,7 +1,7 @@
 import java.io.*;
 import java.net.*;
 import java.sql.*;
-// import java.util.*;
+import java.util.Scanner;
 import java.util.Arrays;
 
 public class Server {
@@ -50,7 +50,7 @@ class ClientHandler extends Thread {
 
             while ((request = reader.readLine()) != null) {
                 System.out.println("Received from client: " + request);
-                handleRequest(request, writer);
+                handleRequest(request, writer,reader);
             }
 
             socket.close();
@@ -60,7 +60,7 @@ class ClientHandler extends Thread {
         }
     }
 
-    private void handleRequest(String request, PrintWriter writer) {
+    private void handleRequest(String request, PrintWriter writer,BufferedReader reader) {
         String[] parts = request.split(" ");
         String command = parts[0];
 
@@ -75,7 +75,7 @@ class ClientHandler extends Thread {
                 confirmParticipant(parts, writer);
                 break;
             case "attemptChallenge":
-                attemptChallenge(parts, writer);
+                attemptChallenge(parts, writer,reader);
                 break;
             default:
                 writer.println("Invalid command");
@@ -185,29 +185,100 @@ class ClientHandler extends Thread {
         }
     }
 
-    private void attemptChallenge(String[] parts, PrintWriter writer) {
+    private void attemptChallenge(String[] parts, PrintWriter writer, BufferedReader reader) {
         String challengeNumber = parts[1];
-
+    
         try {
-            String query = "SELECT * FROM questions WHERE challenge_id = ? ORDER BY RAND() LIMIT 10";
+            String query = "SELECT * FROM questions WHERE id = ? ORDER BY RAND() LIMIT 10";
             PreparedStatement statement = connection.prepareStatement(query);
             statement.setInt(1, Integer.parseInt(challengeNumber));
-            ResultSet resultSet = statement.executeQuery();
-
-            while (resultSet.next()) {
-                int id = resultSet.getInt("id");
-                String questionText = resultSet.getString("question_text");
-
-                writer.println("Question ID: " + id);
+            ResultSet questionResultSet = statement.executeQuery();
+    
+            int totalQuestions = 0;
+            int correctAnswers = 0;
+            int incorrectAnswers = 0;
+    
+            // Prepare a StringBuilder to collect log messages
+            StringBuilder logMessage = new StringBuilder();
+    
+            while (questionResultSet.next()) {
+                int questionId = questionResultSet.getInt("id");
+                String questionText = questionResultSet.getString("question_text");
+                String correctAnswer = questionResultSet.getString("answer");
+    
+                writer.println("Question ID: " + questionId);
                 writer.println("Question: " + questionText);
-                writer.println();
+                writer.flush();
+    
+                // Append question details to log message
+                logMessage.append("Question ID: ").append(questionId).append("\n");
+                logMessage.append("Question: ").append(questionText).append("\n");
+    
+                // Simulate answering logic (replace with actual user input handling)
+                String userAnswer = reader.readLine(); // Read the user's answer from the client
+                boolean isCorrectAnswer = correctAnswer.equals(userAnswer);
+    
+                if (isCorrectAnswer) {
+                    correctAnswers++;
+                } else {
+                    incorrectAnswers++;
+                }
+    
+                totalQuestions++;
             }
-
-        } catch (SQLException e) {
+    
+            // Calculate score and prepare report
+            double score = (double) correctAnswers / totalQuestions * 100;
+    
+            writer.println("Challenge Summary:");
+            writer.println("Total Questions: " + totalQuestions);
+            writer.println("Correct Answers: " + correctAnswers);
+            writer.println("Incorrect Answers: " + incorrectAnswers);
+            writer.println("Score: " + score + "%");
+            writer.flush();
+    
+            // Append summary to log message
+            logMessage.append("Challenge Summary:\n");
+            logMessage.append("Total Questions: ").append(totalQuestions).append("\n");
+            logMessage.append("Correct Answers: ").append(correctAnswers).append("\n");
+            logMessage.append("Incorrect Answers: ").append(incorrectAnswers).append("\n");
+            logMessage.append("Score: ").append(score).append("%\n");
+    
+            // Log the entire challenge attempt to a file
+            logForChallenges(logMessage.toString());
+    
+        } catch (SQLException | IOException e) {
             e.printStackTrace();
             writer.println("Error attempting challenge: " + e.getMessage());
+            writer.flush();
         }
     }
+    
+    // Simulate user answering logic
+    // private String simulateAnswer(String questionText) {
+    //     Scanner scanner = new Scanner(System.in);
+    //     System.out.print("Enter your answer for \"" + questionText + "\": ");
+    //     scanner.close();
+    //     return scanner.nextLine().trim();
+    // }
+    
+    
+    private void logForChallenges(String logMessage) {
+        String logFilePath = "challenge_log.txt";
+
+        try (BufferedWriter writer = new BufferedWriter(new FileWriter(logFilePath, true))) {
+            writer.write(logMessage + "\n\n");
+        } catch (IOException e) {
+            e.printStackTrace();
+            System.err.println("Error writing to log file: " + e.getMessage());
+        }
+    }
+
+    // private boolean simulateAnswer(int questionId) {
+    //     // Replace with actual user input handling logic
+    //     // For simulation purposes, let's assume all answers are correct
+    //     return true;
+    // }
 
     private void logToTextFile(String data) throws IOException {
         try(BufferedWriter writer = new BufferedWriter(new FileWriter(txtFilePath,true))){

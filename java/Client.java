@@ -39,7 +39,7 @@ public class Client {
                         confirmParticipant(scanner, writer);
                         break;
                     case "4":
-                        attemptChallenge(scanner, writer);
+                        attemptChallenge(scanner, writer,reader);
                         break;
                     case "5":
                         writer.println("Bye!");
@@ -102,10 +102,27 @@ public class Client {
         }
     }
 
-    private static void attemptChallenge(Scanner scanner, PrintWriter writer) {
-        System.out.print("Challenge Number: ");
-        String challengeNumber = scanner.nextLine();
+    private static void attemptChallenge(Scanner scanner, PrintWriter writer, BufferedReader reader) {
+        try {
+            System.out.print("Challenge Number: ");
+            String challengeNumber = scanner.nextLine();
 
-        writer.println("attemptChallenge " + challengeNumber);
+            writer.println("attemptChallenge " + challengeNumber);
+
+            String serverResponse;
+            while ((serverResponse = reader.readLine()) != null) {
+                System.out.println(serverResponse);
+
+                if (serverResponse.contains("Question: ")) {
+                    System.out.print("Your answer: ");
+                    String answer = scanner.nextLine();
+                    writer.println(answer);
+                } else if (serverResponse.contains("Challenge Summary")) {
+                    break;
+                }
+            }
+        } catch (IOException e) {
+            System.out.println("Error during attemptChallenge: " + e.getMessage());
+        }
     }
 }

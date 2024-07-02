@@ -75,7 +75,7 @@ class ClientHandler extends Thread {
                 confirmParticipant(parts, writer);
                 break;
             case "attemptChallenge":
-                attemptChallenge(parts, writer,reader);
+                attemptChallenge(new Scanner(reader), writer, Integer.parseInt(parts[1]), Integer.parseInt(parts[2]));
                 break;
             default:
                 writer.println("Invalid command");
@@ -114,12 +114,17 @@ class ClientHandler extends Thread {
         }
     }
 
-    private void viewChallenges(PrintWriter writer) {
+    private static void viewChallenges(PrintWriter writer) {
         try {
-            String query = "SELECT * FROM challenges WHERE NOW() BETWEEN start_date AND end_date";
+            String query = "SELECT c.id, c.name, c.start_date, c.end_date, c.duration, COUNT(q.id) AS num_questions " +
+                           "FROM challenges c " +
+                           "JOIN challenge_question cq ON c.id = cq.challenge_id " +
+                           "JOIN questions q ON cq.question_id = q.id " +
+                           "WHERE NOW() BETWEEN c.start_date AND c.end_date " +
+                           "GROUP BY c.id";
             Statement statement = connection.createStatement();
             ResultSet resultSet = statement.executeQuery(query);
-
+    
             while (resultSet.next()) {
                 int id = resultSet.getInt("id");
                 String name = resultSet.getString("name");
@@ -127,22 +132,26 @@ class ClientHandler extends Thread {
                 Date endDate = resultSet.getDate("end_date");
                 int duration = resultSet.getInt("duration");
                 int numQuestions = resultSet.getInt("num_questions");
-
+    
                 writer.println("Challenge ID: " + id);
                 writer.println("Name: " + name);
                 writer.println("Start Date: " + startDate);
                 writer.println("End Date: " + endDate);
-                writer.println("Duration: " + duration);
+                writer.println("Duration: " + duration + " minutes");
                 writer.println("Number of Questions: " + numQuestions);
                 writer.println();
             }
-
+    
+            // Prompt the participant to choose a challenge ID to attempt
+            writer.println("Enter the Challenge ID you want to attempt:");
+            writer.flush();
+    
         } catch (SQLException e) {
             e.printStackTrace();
             writer.println("Error viewing challenges: " + e.getMessage());
         }
     }
-
+    
     private void confirmParticipant(String[] parts, PrintWriter writer) {
         String confirm = parts[1];
         String username = parts[2];
@@ -185,51 +194,57 @@ class ClientHandler extends Thread {
         }
     }
 
-    private void attemptChallenge(String[] parts, PrintWriter writer, BufferedReader reader) {
-        String challengeNumber = parts[1];
-    
+    private static void attemptChallenge(Scanner scanner, PrintWriter writer, int challengeId, int participantId) {
         try {
-            String query = "SELECT * FROM questions WHERE id = ? ORDER BY RAND() LIMIT 10";
+            String query = "SELECT q.id, q.question_text, q.answer, q.marks " +
+                           "FROM challenge_question cq " +
+                           "JOIN questions q ON cq.question_id = q.id " +
+                           "WHERE cq.challenge_id = ?";
             PreparedStatement statement = connection.prepareStatement(query);
-            statement.setInt(1, Integer.parseInt(challengeNumber));
+            statement.setInt(1, challengeId);
             ResultSet questionResultSet = statement.executeQuery();
     
             int totalQuestions = 0;
             int correctAnswers = 0;
             int incorrectAnswers = 0;
-    
-            // Prepare a StringBuilder to collect log messages
-            StringBuilder logMessage = new StringBuilder();
+            int attemptNumber = 1;
     
             while (questionResultSet.next()) {
                 int questionId = questionResultSet.getInt("id");
                 String questionText = questionResultSet.getString("question_text");
                 String correctAnswer = questionResultSet.getString("answer");
+                int marks = questionResultSet.getInt("marks");
     
                 writer.println("Question ID: " + questionId);
                 writer.println("Question: " + questionText);
+                writer.println("Remaining Questions: " + (10 - totalQuestions));
+                writer.println("Time Remaining: X minutes"); // Implement timer logic if needed
                 writer.flush();
     
-                // Append question details to log message
-                logMessage.append("Question ID: ").append(questionId).append("\n");
-                logMessage.append("Question: ").append(questionText).append("\n");
+                // Prompt participant for answer
+                writer.print("Your answer: ");
+                writer.flush();
+                String userAnswer = scanner.nextLine();
     
-                // Simulate answering logic (replace with actual user input handling)
-                String userAnswer = reader.readLine(); // Read the user's answer from the client
-                boolean isCorrectAnswer = correctAnswer.equals(userAnswer);
+                boolean isCorrectAnswer = correctAnswer.equalsIgnoreCase(userAnswer.trim());
     
                 if (isCorrectAnswer) {
                     correctAnswers++;
+                    writer.println("Correct!");
                 } else {
                     incorrectAnswers++;
+                    writer.println("Incorrect! Correct answer was: " + correctAnswer);
                 }
+    
+                // Record attempt in database
+                recordAttempt(participantId, challengeId, questionId, attemptNumber, marks, isCorrectAnswer ? marks : 0);
+                attemptNumber++;
     
                 totalQuestions++;
             }
     
-            // Calculate score and prepare report
+            // Calculate and display score
             double score = (double) correctAnswers / totalQuestions * 100;
-    
             writer.println("Challenge Summary:");
             writer.println("Total Questions: " + totalQuestions);
             writer.println("Correct Answers: " + correctAnswers);
@@ -237,20 +252,25 @@ class ClientHandler extends Thread {
             writer.println("Score: " + score + "%");
             writer.flush();
     
-            // Append summary to log message
-            logMessage.append("Challenge Summary:\n");
-            logMessage.append("Total Questions: ").append(totalQuestions).append("\n");
-            logMessage.append("Correct Answers: ").append(correctAnswers).append("\n");
-            logMessage.append("Incorrect Answers: ").append(incorrectAnswers).append("\n");
-            logMessage.append("Score: ").append(score).append("%\n");
-    
-            // Log the entire challenge attempt to a file
-            logForChallenges(logMessage.toString());
-    
-        } catch (SQLException | IOException e) {
+        } catch (SQLException e) {
             e.printStackTrace();
             writer.println("Error attempting challenge: " + e.getMessage());
             writer.flush();
+        }
+    }
+    
+    private static void recordAttempt(int participantId, int challengeId, int questionId, int attemptNumber, int marks, int marksObtained) {
+        try {
+            String query = "INSERT INTO participant_attempts (participant_id, challenge_question_id, attempt_number, score, time_taken) VALUES (?, ?, ?, ?, ?)";
+            PreparedStatement statement = connection.prepareStatement(query);
+            statement.setInt(1, participantId);
+            statement.setInt(2, questionId);
+            statement.setInt(3, attemptNumber);
+            statement.setInt(4, marksObtained);
+            statement.setInt(5, 0); // Placeholder for time taken
+            statement.executeUpdate();
+        } catch (SQLException e) {
+            e.printStackTrace();
         }
     }
     

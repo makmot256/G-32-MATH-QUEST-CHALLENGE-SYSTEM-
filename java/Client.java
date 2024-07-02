@@ -106,14 +106,14 @@ public class Client {
         try {
             System.out.print("Challenge Number: ");
             String challengeNumber = scanner.nextLine();
-
+    
             writer.println("attemptChallenge " + challengeNumber);
-
+    
             String serverResponse;
             while ((serverResponse = reader.readLine()) != null) {
                 System.out.println(serverResponse);
-
-                if (serverResponse.contains("Question: ")) {
+    
+                if (serverResponse.contains("Question ID: ")) {
                     System.out.print("Your answer: ");
                     String answer = scanner.nextLine();
                     writer.println(answer);
@@ -124,5 +124,5 @@ public class Client {
         } catch (IOException e) {
             System.out.println("Error during attemptChallenge: " + e.getMessage());
         }
-    }
+    }    
 }

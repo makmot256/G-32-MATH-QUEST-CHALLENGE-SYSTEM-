@@ -114,6 +114,10 @@ class ClientHandler extends Thread {
         }
     }
 
+    // view applicants
+    // function to shuffle questions
+    // handling email
+
     private static void viewChallenges(PrintWriter writer) {
         try {
             String query = "SELECT c.id, c.name, c.start_date, c.end_date, c.duration, COUNT(q.id) AS num_questions " +

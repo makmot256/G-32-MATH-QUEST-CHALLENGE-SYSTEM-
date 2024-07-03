@@ -43,7 +43,8 @@ CREATE TABLE challenges (
     start_date DATE NOT NULL,
     end_date DATE NOT NULL,
     duration INT NOT NULL,
-    num_questions INT NOT NULL
+    num_questions INT NOT NULL,
+    description VARCHAR(255) NOT NULL
 );
 
 -- Table for Questions
@@ -72,3 +73,11 @@ CREATE TABLE rejected_applicants (
     username VARCHAR(255) NOT NULL,
     reason TEXT NOT NULL
 );
+
+CREATE TABLE school_representatives (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    username VARCHAR(255) UNIQUE NOT NULL,
+    firstname VARCHAR(255) NOT NULL,
+    lastname VARCHAR(255) NOT NULL,
+    email VARCHAR(255) NOT NULL
+)

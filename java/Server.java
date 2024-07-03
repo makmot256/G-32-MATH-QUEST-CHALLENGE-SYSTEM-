@@ -2,7 +2,10 @@ import java.io.*;
 import java.net.*;
 import java.sql.*;
 import java.util.Scanner;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
 
 public class Server {
 
@@ -77,9 +80,137 @@ class ClientHandler extends Thread {
             case "attemptChallenge":
                 attemptChallenge(new Scanner(reader), writer, Integer.parseInt(parts[1]), Integer.parseInt(parts[2]));
                 break;
+            case "login":
+            if ("school".equals(parts[1])) {
+                loginSchoolRepresentative(new Scanner(reader), writer);
+            } else if ("participant".equals(parts[1])) {
+                loginParticipant(new Scanner(reader), writer);
+            }
+            break;
             default:
                 writer.println("Invalid command");
         }
+    }
+
+
+    private void displayMainMenu(Scanner scanner, PrintWriter writer) {
+        while (true) {
+            writer.println("Main Menu:");
+            writer.println("1. Login as Participant");
+            writer.println("2. Login as School Representative");
+            writer.println("3. Exit");
+            writer.print("Enter your choice: ");
+            writer.flush();
+    
+            String choice = scanner.nextLine().trim();
+    
+            switch (choice) {
+                case "1":
+                    if (loginParticipant(scanner, writer)) {
+                        displayParticipantMenu(scanner, writer);
+                    }
+                    break;
+                case "2":
+                    if (loginSchoolRepresentative(scanner, writer)) {
+                        displaySchoolRepresentativeMenu(scanner, writer);
+                    }
+                    break;
+                case "3":
+                    writer.println("Exiting...");
+                    writer.flush();
+                    return;
+                default:
+                    writer.println("Invalid choice. Please try again.");
+                    writer.flush();
+            }
+        }
+    }
+
+    private void displayParticipantMenu(Scanner scanner, PrintWriter writer) {
+        while (true) {
+            writer.println("Participant Menu:");
+            writer.println("1. View Challenges");
+            writer.println("2. Attempt Challenge");
+            writer.println("3. Logout");
+            writer.print("Enter your choice: ");
+            writer.flush();
+    
+            String choice = scanner.nextLine().trim();
+    
+            switch (choice) {
+                case "1":
+                    // Implement viewChallenges method for participant
+                    break;
+                case "2":
+                    writer.print("Enter Challenge ID to attempt: ");
+                    writer.flush();
+                    int challengeId = Integer.parseInt(scanner.nextLine().trim());
+                    // Implement attemptChallenge method
+                    attemptChallenge(scanner, writer, challengeId, getParticipantIdByUsername(username));
+                    break;
+                case "3":
+                    writer.println("Logging out...");
+                    writer.flush();
+                    return;
+                default:
+                    writer.println("Invalid choice. Please try again.");
+                    writer.flush();
+            }
+        }
+    }
+    
+    private void displaySchoolRepresentativeMenu(Scanner scanner, PrintWriter writer) {
+        while (true) {
+            writer.println("School Representative Menu:");
+            writer.println("1. View Applicants");
+            writer.println("2. Logout");
+            writer.print("Enter your choice: ");
+            writer.flush();
+    
+            String choice = scanner.nextLine().trim();
+    
+            switch (choice) {
+                case "1":
+                    // Implement viewApplicants method for school representative
+                    viewApplicants(scanner, writer);
+                    break;
+                case "2":
+                    writer.println("Logging out...");
+                    writer.flush();
+                    return;
+                default:
+                    writer.println("Invalid choice. Please try again.");
+                    writer.flush();
+            }
+        }
+    }
+    
+    private int getParticipantIdByUsername(String username) {
+        int participantId = -1;
+        try {
+            String query = "SELECT id FROM participants WHERE username = ?";
+            PreparedStatement statement = connection.prepareStatement(query);
+            statement.setString(1, username);
+            ResultSet resultSet = statement.executeQuery();
+    
+            if (resultSet.next()) {
+                participantId = resultSet.getInt("id");
+            }
+    
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    
+        return participantId;
+    }
+
+    private static String readPasswordSecurely(PrintWriter writer) {
+        Console console = System.console();
+        if (console == null) {
+            throw new RuntimeException("No console available");
+        }
+        char[] passwordArray = console.readPassword("Enter password: ");
+        return new String(passwordArray);
     }
 
     private void registerApplicant(String[] parts, PrintWriter writer) {
@@ -115,10 +246,118 @@ class ClientHandler extends Thread {
     }
 
     // view applicants for school representative so login school rep then show the menu including view applicants
+
+    private void viewApplicants(PrintWriter writer)
+    {
+        try{
+            String query = "SELECT username,firstname,lastname,school_registration_number,email,date_of_birth FROM participants WHERE status = 'pending'";
+            Statement statement = connection.createStatement();
+            ResultSet resultSet = statement.executeQuery(query);
+
+            // display applicants
+            while (resultSet.next()) {
+                String username = resultSet.getString("username");
+                String firstName = resultSet.getString("firstname");
+                String lastName = resultSet.getString("lastname");
+                String schoolRegNumber = resultSet.getString("school_registration_number");
+                String email = resultSet.getString("email");
+                Date dateOfBirth = resultSet.getDate("date_of_birth");
+
+                writer.println("Username: " + username);
+                writer.println("Name: " + firstName + " " + lastName);
+                writer.println("School Registration Number: " + schoolRegNumber);
+                writer.println("Email: " + email);
+                writer.println("Date of Birth: " + dateOfBirth);
+                writer.println();
+
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+            writer.println("Error viewing applicants: " + e.getMessage());
+        }
+    }
     // add the confirm participant solely for school representative
     // function to shuffle questions/pick randomly from db
+    private static List<Integer> shuffleQuestions(int challengeId){
+        List<Integer> questionIds = new ArrayList<>();
+        try {
+            String query = "SELECT question_id FROM challenge_question WHERE challenge_id = ?";
+            PreparedStatement statement = connection.prepareStatement(query);
+            statement.setInt(1, challengeId);
+            ResultSet resultSet = statement.executeQuery();
+            while (resultSet.next()) {
+                int questionId = resultSet.getInt("question_id");
+                questionIds.add(questionId);
+            }
+
+            Collections.shuffle(questionIds);
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        return questionIds;
+    }
     // handling email(smtp)
     // login for both participant and school representative
+    private static boolean loginParticipant(Scanner scanner,PrintWriter writer) {
+        writer.print("Enter username: ");
+        writer.flush();
+        String username = scanner.nextLine();
+
+        String password = readPasswordSecurely(writer);
+
+        try {
+            String query = "SELECT * FROM participants WHERE username = ? AND password = ?";
+            PreparedStatement statement = connection.prepareStatement(query);
+            statement.setString(1, username);
+            statement.setString(2, password);
+            ResultSet resultSet = statement.executeQuery();
+            if (resultSet.next()) {
+                writer.println("Login successful!");
+                writer.flush();
+                return true;
+            } else {
+                writer.println("Invalid username or password");
+                writer.flush();
+                return false;
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+            writer.println("Error during login: " + e.getMessage());
+            writer.flush();
+            return false;
+        }
+    }
+
+    private static boolean loginSchoolRepresentative(Scanner scanner, PrintWriter writer) {
+        writer.print("Enter username: ");
+        writer.flush();
+        String username = scanner.nextLine();
+
+        String password = readPasswordSecurely(writer);
+
+        try {
+            String query = "SELECT * FROM school_representatives WHERE username = ? AND password = ?";
+            PreparedStatement statement = connection.prepareStatement(query);
+            statement.setString(1, username);
+            statement.setString(2, password);
+            ResultSet resultSet = statement.executeQuery();
+            if (resultSet.next()) {
+                writer.println("Login successful!");
+                writer.flush();
+                return true;
+            } else {
+                writer.println("Invalid username or password");
+                writer.flush();
+                return false;
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+            writer.println("Error during login: " + e.getMessage());
+            writer.flush();
+            return false;
+        }
+    }
     // query the many-to-many relationship between challenge and question pivot table and use it to display the questions in each challenge
     // checking rejected_applicants table when student tries to register
     // check if status is "accepted/confirmed" before participant logs in
@@ -215,83 +454,97 @@ class ClientHandler extends Thread {
         }
     }
 
+
+    private static List<String> getQuestionsForChallenge(int challengeId) {
+        List<String> questions = new ArrayList<>();
+        String query = "SELECT q.id, q.question_text FROM questions q " +
+                       "INNER JOIN challenge_question cq ON q.id = cq.question_id " +
+                       "WHERE cq.challenge_id = ?";
+        try (PreparedStatement statement = connection.prepareStatement(query)) {
+            statement.setInt(1, challengeId);
+            ResultSet resultSet = statement.executeQuery();
+            while (resultSet.next()) {
+                questions.add(resultSet.getString("question_text"));
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return questions;
+    }
+    
     private static void attemptChallenge(Scanner scanner, PrintWriter writer, int challengeId, int participantId) {
         // TODO: participant can do as many as possible but cannot do more than one at a time.
         // TODO: add check to see if challenge is valid
         // TODO: add check to see if user is eligible to participate
-        try {
-            String query = "SELECT q.id, q.question_text, q.answer, q.marks " +
-                           "FROM challenge_question cq " +
-                           "JOIN questions q ON cq.question_id = q.id " +
-                           "WHERE cq.challenge_id = ?";
-            PreparedStatement statement = connection.prepareStatement(query);
-            statement.setInt(1, challengeId);
-            ResultSet questionResultSet = statement.executeQuery();
-    
-            int totalQuestions = 0;
-            int correctAnswers = 0;
-            int incorrectAnswers = 0;
-            int attemptNumber = 1;
-    
-            while (questionResultSet.next()) {
-                int questionId = questionResultSet.getInt("id");
-                String questionText = questionResultSet.getString("question_text");
-                String correctAnswer = questionResultSet.getString("answer");
-                int marks = questionResultSet.getInt("marks");
-    
-                writer.println("Question ID: " + questionId);
-                writer.println("Question: " + questionText);
-                writer.println("Remaining Questions: " + (10 - totalQuestions));
-                writer.println("Time Remaining: X minutes"); // Implement timer logic if needed
-                writer.flush();
-    
-                // Prompt participant for answer
-                writer.print("Your answer: ");
-                writer.flush();
-                String userAnswer = scanner.nextLine();
-    
-                boolean isCorrectAnswer = correctAnswer.equalsIgnoreCase(userAnswer.trim());
-    
-                if (isCorrectAnswer) {
-                    correctAnswers++;
-                    writer.println("Correct!");
-                } else {
-                    incorrectAnswers++;
-                    writer.println("Incorrect! Correct answer was: " + correctAnswer);
+        int totalScore = 0;
+        List<Integer> questionIds = shuffleQuestions(challengeId);
+        
+        for (int questionId : questionIds) {
+            try {
+                // Fetch question details using questionId and present to participant
+                String query = "SELECT question_text, answer,marks FROM questions WHERE id = ?";
+                PreparedStatement statement = connection.prepareStatement(query);
+                statement.setInt(1, questionId);
+                ResultSet questionResultSet = statement.executeQuery();
+
+                // Display question to participant and handle their response
+                if (questionResultSet.next()) {
+                    String questionText = questionResultSet.getString("question_text");
+                    String correctAnswer = questionResultSet.getString("answer");
+                    int marks = questionResultSet.getInt("marks");
+
+                    writer.println("Question: " + questionText);
+                    writer.print("Your answer: ");
+                    writer.flush();
+
+                    String userAnswer = scanner.nextLine().trim();
+
+                    int marksAwarded;
+                    boolean isCorrect = false;
+                    
+                    if(userAnswer.equalsIgnoreCase("-")) {
+                        marksAwarded = 0;
+                    } else if (correctAnswer.equalsIgnoreCase(userAnswer)) {
+                        marksAwarded = marks;
+                        isCorrect = true;
+                    }else{
+                        marksAwarded = -3;
+                    }
+
+                    // record attempt and update total score
+                    recordAttempt(participantId, challengeId, questionId, isCorrect,marksAwarded);
+                    totalScore += marksAwarded;
+                    
+                    
+                    if (isCorrect) {
+                        writer.println("Correct!");
+                    } else {
+                        writer.println("Incorrect! Correct answer was: " + correctAnswer);
+                    }
+                    writer.println("Marks Awarded: " + marksAwarded);
+                    writer.println();
                 }
-    
-                // Record attempt in database
-                recordAttempt(participantId, challengeId, questionId, attemptNumber, marks, isCorrectAnswer ? marks : 0);
-                attemptNumber++;
-    
-                totalQuestions++;
+
+            } catch (SQLException e) {
+                e.printStackTrace();
+                writer.println("Error fetching question: " + e.getMessage());
+                writer.println();
             }
-    
-            // Calculate and display score
-            double score = (double) correctAnswers / totalQuestions * 100;
-            writer.println("Challenge Summary:");
-            writer.println("Total Questions: " + totalQuestions);
-            writer.println("Correct Answers: " + correctAnswers);
-            writer.println("Incorrect Answers: " + incorrectAnswers);
-            writer.println("Score: " + score + "%");
-            writer.flush();
-    
-        } catch (SQLException e) {
-            e.printStackTrace();
-            writer.println("Error attempting challenge: " + e.getMessage());
-            writer.flush();
         }
+
+        // Provide challenge summary after all questions are attempted
+        writer.println("Challenge completed. Totlal score: " + totalScore + ". Provide summary here.");
+        writer.flush();
     }
     
-    private static void recordAttempt(int participantId, int challengeId, int questionId, int attemptNumber, int marks, int marksObtained) {
-        try {
-            String query = "INSERT INTO participant_attempts (participant_id, challenge_question_id, attempt_number, score, time_taken) VALUES (?, ?, ?, ?, ?)";
-            PreparedStatement statement = connection.prepareStatement(query);
+    private static void recordAttempt(int participantId, int challengeId, int questionId, boolean isCorrect,int marksAwarded) {
+        String query = "INSERT INTO attempts (participant_id, challenge_id, question_id, is_correct) VALUES (?, ?, ?, ?)";
+        try (PreparedStatement statement = connection.prepareStatement(query)) {
             statement.setInt(1, participantId);
-            statement.setInt(2, questionId);
-            statement.setInt(3, attemptNumber);
-            statement.setInt(4, marksObtained);
-            statement.setInt(5, 0); // Placeholder for time taken
+            statement.setInt(2, challengeId);
+            statement.setInt(3, questionId);
+            statement.setBoolean(4, isCorrect);
+            statement.setInt(5, marksAwarded);
             statement.executeUpdate();
         } catch (SQLException e) {
             e.printStackTrace();

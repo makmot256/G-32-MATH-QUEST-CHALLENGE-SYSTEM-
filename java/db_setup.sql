@@ -8,7 +8,7 @@ CREATE TABLE schools (
     name VARCHAR(255) NOT NULL,
     district VARCHAR(255) NOT NULL,
     school_registration_number VARCHAR(255) UNIQUE NOT NULL,
-    email VARCHAR(255) NOT NULL,
+    representative_email VARCHAR(255) NOT NULL,
     representative_name VARCHAR(255) NOT NULL,
     -- validated BOOLEAN DEFAULT FALSE,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,

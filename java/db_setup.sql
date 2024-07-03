@@ -9,7 +9,10 @@ CREATE TABLE schools (
     district VARCHAR(255) NOT NULL,
     school_registration_number VARCHAR(255) UNIQUE NOT NULL,
     email VARCHAR(255) NOT NULL,
-    representative_name VARCHAR(255) NOT NULL
+    representative_name VARCHAR(255) NOT NULL,
+    -- validated BOOLEAN DEFAULT FALSE,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 );
 
 -- Table for Participants
@@ -22,7 +25,9 @@ CREATE TABLE participants (
     email VARCHAR(255) NOT NULL,
     date_of_birth DATE NOT NULL,
     status VARCHAR(255) NOT NULL DEFAULT 'confirmed',
-    FOREIGN KEY (school_registration_number) REFERENCES schools(school_registration_number)
+    FOREIGN KEY (school_registration_number) REFERENCES schools(school_registration_number),
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 );
 
 -- Table for Applicants
@@ -33,7 +38,9 @@ CREATE TABLE applicants (
     lastname VARCHAR(255) NOT NULL,
     school_registration_number VARCHAR(255),
     email VARCHAR(255) NOT NULL,
-    date_of_birth DATE NOT NULL
+    date_of_birth DATE NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 );
 
 -- Table for Challenges
@@ -44,7 +51,9 @@ CREATE TABLE challenges (
     end_date DATE NOT NULL,
     duration INT NOT NULL,
     num_questions INT NOT NULL,
-    description VARCHAR(255) NOT NULL
+    description VARCHAR(255) NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 );
 
 -- Table for Questions
@@ -52,7 +61,9 @@ CREATE TABLE questions (
     id INT AUTO_INCREMENT PRIMARY KEY,
     question_text TEXT NOT NULL,
     answer TEXT NOT NULL,
-    marks INT NOT NULL
+    marks INT NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 );
 
 -- Table for Participant Attempts
@@ -63,15 +74,20 @@ CREATE TABLE participant_attempts (
     attempt_number INT NOT NULL,
     score INT NOT NULL,
     time_taken INT NOT NULL,
+    attempt_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (participant_id) REFERENCES participants(id),
-    FOREIGN KEY (challenge_id) REFERENCES challenges(id)
+    FOREIGN KEY (challenge_id) REFERENCES challenges(id),
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 );
 
 -- Table for Rejected Applicants
 CREATE TABLE rejected_applicants (
     id INT AUTO_INCREMENT PRIMARY KEY,
     username VARCHAR(255) NOT NULL,
-    reason TEXT NOT NULL
+    reason TEXT NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 );
 
 CREATE TABLE school_representatives (
@@ -79,5 +95,16 @@ CREATE TABLE school_representatives (
     username VARCHAR(255) UNIQUE NOT NULL,
     firstname VARCHAR(255) NOT NULL,
     lastname VARCHAR(255) NOT NULL,
-    email VARCHAR(255) NOT NULL
+    email VARCHAR(255) NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 )
+
+CREATE TABLE administrators (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    name VARCHAR(255) NOT NULL,
+    email VARCHAR(255) UNIQUE NOT NULL,
+    password VARCHAR(255) NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+);

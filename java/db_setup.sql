@@ -71,15 +71,20 @@ CREATE TABLE participant_attempts (
     id INT AUTO_INCREMENT PRIMARY KEY,
     participant_id INT NOT NULL,
     challenge_id INT NOT NULL,
+    question_id INT NOT NULL,
     attempt_number INT NOT NULL,
+    is_correct BOOLEAN NOT NULL,
     score INT NOT NULL,
     time_taken INT NOT NULL,
     attempt_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (participant_id) REFERENCES participants(id),
     FOREIGN KEY (challenge_id) REFERENCES challenges(id),
+    FOREIGN KEY (question_id) REFERENCES questions(id),
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 );
+
+
 
 -- Table for Rejected Applicants
 CREATE TABLE rejected_applicants (

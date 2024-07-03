@@ -225,7 +225,18 @@ class ClientHandler extends Thread {
             // logToTextFile("register " + username + " " + firstName + " " + lastName + " " + schoolRegNumber + " " + email + " " + dob);
             logToTextFile(String.join(" ", parts));
 
-            String query = "INSERT INTO participants (username, firstname, lastname, school_registration_number, email, date_of_birth) VALUES (?, ?, ?, ?, ?, ?)";
+            // Check if the applicant is in the rejected_applicants table
+            String checkQuery = "SELECT * FROM rejected_applicants WHERE school_registration_number = ?";
+            PreparedStatement checkStatement = connection.prepareStatement(checkQuery);
+            checkStatement.setString(1, schoolRegNumber);
+            ResultSet checkResult = checkStatement.executeQuery();
+
+            if (checkResult.next()) {
+                writer.println("Registration failed. This school registration number has been rejected previously.");
+                return; 
+            }    
+
+            String query = "INSERT INTO applicants (username, firstname, lastname, school_registration_number, email, date_of_birth) VALUES (?, ?, ?, ?, ?, ?)";
             PreparedStatement statement = connection.prepareStatement(query);
             statement.setString(1, username);
             statement.setString(2, firstName);
@@ -236,12 +247,12 @@ class ClientHandler extends Thread {
 
             int rowsInserted = statement.executeUpdate();
             if (rowsInserted > 0) {
-                writer.println("Participant registered successfully!");
+                writer.println("Applicant registered successfully!");
             }
 
         } catch (SQLException | IOException e) {
             e.printStackTrace();
-            writer.println("Error registering participant: " + e.getMessage());
+            writer.println("Error registering applicant: " + e.getMessage());
         }
     }
 
@@ -358,15 +369,14 @@ class ClientHandler extends Thread {
             return false;
         }
     }
-    // query the many-to-many relationship between challenge and question pivot table and use it to display the questions in each challenge
-    // checking rejected_applicants table when student tries to register
-    // check if status is "accepted/confirmed" before participant logs in
+    // query the many-to-many relationship between challenge and question pivot table and use it to display the questions in each challenge (done)
+    // checking rejected_applicants table when student tries to register(done)
     // add details/description of each challenge
     // record every attempt per question and stop attempts after the maximum of 3
     //  The questions will be presented one by one and each time a question is presented, the number of remaining questions and time are indicated above the question
     // we need to implement a timer
     // wrong answer = -3 marks , not sure = 0 marks , correct answer = marks originally assigned(necessitate a marks column on each question)
-    // can use a pivot table to track attempts
+    // can use a pivot table to track attempts(participant_attempts)
     //  When the time for attempting the question expires, the participant challenge is closed and the participant is given their score and report.
     // generate report for each participant on close and esepcialy when duration closes. can put it in a dunction that shows scores,time taken for each question and total time for the whole challenge
 
@@ -376,7 +386,7 @@ class ClientHandler extends Thread {
         // log the participant and their school since their school exists 
         // send an email immediately to the school representative
         try {
-            String query = "SELECT c.id, c.name, c.start_date, c.end_date, c.duration, COUNT(q.id) AS num_questions " +
+            String query = "SELECT c.id, c.name, c.start_date, c.end_date, c.duration,c.description, COUNT(q.id) AS num_questions " +
                            "FROM challenges c " +
                            "JOIN challenge_questions cq ON c.id = cq.challenge_id " +
                            "JOIN questions q ON cq.question_id = q.id " +
@@ -391,10 +401,12 @@ class ClientHandler extends Thread {
                 Date startDate = resultSet.getDate("start_date");
                 Date endDate = resultSet.getDate("end_date");
                 int duration = resultSet.getInt("duration");
+                String description = resultSet.getString("description");
                 int numQuestions = resultSet.getInt("num_questions");
     
                 writer.println("Challenge ID: " + id);
                 writer.println("Name: " + name);
+                writer.println("Description: " + description);
                 writer.println("Start Date: " + startDate);
                 writer.println("End Date: " + endDate);
                 writer.println("Duration: " + duration + " minutes");
@@ -472,85 +484,186 @@ class ClientHandler extends Thread {
         return questions;
     }
     
+    // TODO: participant can do as many as possible but cannot do more than one at a time.
+    // TODO: add check to see if challenge is valid
+    // TODO: add check to see if user is eligible to participate
+
     private static void attemptChallenge(Scanner scanner, PrintWriter writer, int challengeId, int participantId) {
-        // TODO: participant can do as many as possible but cannot do more than one at a time.
-        // TODO: add check to see if challenge is valid
-        // TODO: add check to see if user is eligible to participate
-        int totalScore = 0;
-        List<Integer> questionIds = shuffleQuestions(challengeId);
-        
-        for (int questionId : questionIds) {
-            try {
-                // Fetch question details using questionId and present to participant
-                String query = "SELECT question_text, answer,marks FROM questions WHERE id = ?";
+        try {
+            // Fetch challenge duration from the database
+            int challengeDuration = getChallengeDuration(challengeId); // Implement this method to fetch duration
+    
+            // Fetch all question IDs for the challenge
+            List<Integer> questionIds = shuffleQuestions(challengeId);
+            int totalQuestions = questionIds.size();
+            int remainingQuestions = totalQuestions;
+    
+            // Count existing attempts for this participant and challenge
+            int attemptsCount = countAttempts(participantId, challengeId); // Implement this method to count attempts
+    
+            // Check if participant has exceeded maximum attempts
+            if (attemptsCount >= 3) {
+                writer.println("You have already attempted this challenge three times. Maximum attempts reached.");
+                return;
+            }
+    
+            // Timer variables
+            long startTime = System.currentTimeMillis();
+            long endTime = startTime + (challengeDuration * 60 * 1000); // Convert duration to milliseconds
+    
+            int attemptNumber = attemptsCount + 1; // Calculate the attempt number for the current attempt
+            // Arrays to store per question data
+            long[] questionTimes = new long[totalQuestions];
+            boolean[] questionCorrectness = new boolean[totalQuestions];
+            int[] questionScores = new int[totalQuestions];
+            int totalScore = 0;
+    
+            for (int i = 0; i < totalQuestions; i++) {
+                int questionId = questionIds.get(i);
+    
+                // Fetch question details using questionId
+                String query = "SELECT question_text, answer, marks FROM questions WHERE id = ?";
                 PreparedStatement statement = connection.prepareStatement(query);
                 statement.setInt(1, questionId);
                 ResultSet questionResultSet = statement.executeQuery();
-
-                // Display question to participant and handle their response
+    
                 if (questionResultSet.next()) {
                     String questionText = questionResultSet.getString("question_text");
                     String correctAnswer = questionResultSet.getString("answer");
                     int marks = questionResultSet.getInt("marks");
-
+    
+                    // Display remaining questions and time
+                    writer.println("Remaining Questions: " + remainingQuestions);
+                    displayRemainingTime(startTime, endTime, writer);
+    
+                    // Present question to participant
                     writer.println("Question: " + questionText);
                     writer.print("Your answer: ");
                     writer.flush();
-
+    
                     String userAnswer = scanner.nextLine().trim();
+    
+                    // Check answer correctness and record attempt
+                    boolean isCorrect = correctAnswer.equalsIgnoreCase(userAnswer);
+                    recordAttempt(participantId, challengeId, questionId, attemptNumber, isCorrect, marks, System.currentTimeMillis() - startTime);
 
-                    int marksAwarded;
-                    boolean isCorrect = false;
-                    
-                    if(userAnswer.equalsIgnoreCase("-")) {
-                        marksAwarded = 0;
-                    } else if (correctAnswer.equalsIgnoreCase(userAnswer)) {
-                        marksAwarded = marks;
-                        isCorrect = true;
-                    }else{
-                        marksAwarded = -3;
-                    }
-
-                    // record attempt and update total score
-                    recordAttempt(participantId, challengeId, questionId, isCorrect,marksAwarded);
-                    totalScore += marksAwarded;
-                    
-                    
+                    // Store question data
+                    questionTimes[i] = System.currentTimeMillis() - startTime;
+                    questionCorrectness[i] = isCorrect;
+                    questionScores[i] = isCorrect ? marks : 0;
+                    totalScore += questionScores[i];
+    
                     if (isCorrect) {
                         writer.println("Correct!");
                     } else {
                         writer.println("Incorrect! Correct answer was: " + correctAnswer);
                     }
-                    writer.println("Marks Awarded: " + marksAwarded);
                     writer.println();
                 }
-
-            } catch (SQLException e) {
-                e.printStackTrace();
-                writer.println("Error fetching question: " + e.getMessage());
-                writer.println();
+    
+                remainingQuestions--;
+    
+                // Check if time is up
+                if (System.currentTimeMillis() >= endTime) {
+                    writer.println("Time's up! Challenge will be closed.");
+                    break;
+                }
             }
+    
+            // Provide challenge summary after all questions are attempted
+            writer.println("Challenge completed. Provide summary here.");
+            generateChallengeSummary(writer, totalQuestions, questionTimes, questionCorrectness, questionScores, totalScore, System.currentTimeMillis() - startTime);
+            writer.flush();
+    
+        } catch (SQLException e) {
+            e.printStackTrace();
+            writer.println("Error during challenge attempt: " + e.getMessage());
         }
-
-        // Provide challenge summary after all questions are attempted
-        writer.println("Challenge completed. Totlal score: " + totalScore + ". Provide summary here.");
-        writer.flush();
     }
     
-    private static void recordAttempt(int participantId, int challengeId, int questionId, boolean isCorrect,int marksAwarded) {
-        String query = "INSERT INTO attempts (participant_id, challenge_id, question_id, is_correct) VALUES (?, ?, ?, ?)";
+    private static int countAttempts(int participantId, int challengeId) {
+        int attemptCount = 0;
+        try {
+            String query = "SELECT COUNT(*) AS attempt_count FROM participant_attempts " +
+                           "WHERE participant_id = ? AND challenge_id = ?";
+            PreparedStatement statement = connection.prepareStatement(query);
+            statement.setInt(1, participantId);
+            statement.setInt(2, challengeId);
+            ResultSet resultSet = statement.executeQuery();
+            if (resultSet.next()) {
+                attemptCount = resultSet.getInt("attempt_count");
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return attemptCount;
+    }
+    
+    private static void displayRemainingTime(long startTime, long endTime, PrintWriter writer) {
+        long currentTime = System.currentTimeMillis();
+        long remainingTimeMillis = endTime - currentTime;
+    
+        if (remainingTimeMillis <= 0) {
+            writer.println("Time Remaining: 0 seconds");
+        } else {
+            long remainingSeconds = remainingTimeMillis / 1000;
+            writer.println("Time Remaining: " + remainingSeconds + " seconds");
+        }
+    }
+    
+
+    private static int getChallengeDuration(int challengeId) throws SQLException {
+        int duration = 0;
+        String query = "SELECT duration FROM challenges WHERE id = ?";
+        
+        try (PreparedStatement statement = connection.prepareStatement(query)) {
+            statement.setInt(1, challengeId);
+            ResultSet resultSet = statement.executeQuery();
+            
+            if (resultSet.next()) {
+                duration = resultSet.getInt("duration");
+            }
+        }
+        
+        return duration;
+    }
+    
+        
+    
+    private static void recordAttempt(int participantId, int challengeId, int questionId, int attemptNumber, boolean isCorrect, int score, long timeTaken) {
+        String query = "INSERT INTO participant_attempts (participant_id, challenge_id, question_id, attempt_number, is_correct, score, time_taken) " +
+                       "VALUES (?, ?, ?, ?, ?, ?, ?)";
         try (PreparedStatement statement = connection.prepareStatement(query)) {
             statement.setInt(1, participantId);
             statement.setInt(2, challengeId);
             statement.setInt(3, questionId);
-            statement.setBoolean(4, isCorrect);
-            statement.setInt(5, marksAwarded);
+            statement.setInt(4, attemptNumber);
+            statement.setBoolean(5, isCorrect);
+            statement.setInt(6, score);
+            statement.setLong(7, timeTaken);
             statement.executeUpdate();
         } catch (SQLException e) {
             e.printStackTrace();
         }
     }
-    
+        
+        
+    private static void generateChallengeSummary(PrintWriter writer, int totalQuestions, long[] questionTimes,boolean[] questionCorrectness, int[] questionScores, int totalScore,long totalTimeTaken) {
+        writer.println("Challenge Summary:");
+        writer.println("Total Questions: " + totalQuestions);
+        writer.println("Total Score: " + totalScore);
+        writer.println("Total Time Taken: " + (totalTimeTaken / 1000) + " seconds");
+            writer.println();
+
+        for (int i = 0; i < totalQuestions; i++) {
+            writer.println("Question " + (i + 1) + ":");
+            writer.println("   Time Taken: " + (questionTimes[i] / 1000) + " seconds");
+            writer.println("   Correct: " + (questionCorrectness[i] ? "Yes" : "No"));
+            writer.println("   Score: " + questionScores[i]);
+            writer.println();
+        }
+    }
+
     // Simulate user answering logic
     // private String simulateAnswer(String questionText) {
     //     Scanner scanner = new Scanner(System.in);

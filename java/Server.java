@@ -281,7 +281,7 @@ class ClientHandler extends Thread {
     private static List<Integer> shuffleQuestions(int challengeId){
         List<Integer> questionIds = new ArrayList<>();
         try {
-            String query = "SELECT question_id FROM challenge_question WHERE challenge_id = ?";
+            String query = "SELECT question_id FROM challenge_questions WHERE challenge_id = ?";
             PreparedStatement statement = connection.prepareStatement(query);
             statement.setInt(1, challengeId);
             ResultSet resultSet = statement.executeQuery();
@@ -378,7 +378,7 @@ class ClientHandler extends Thread {
         try {
             String query = "SELECT c.id, c.name, c.start_date, c.end_date, c.duration, COUNT(q.id) AS num_questions " +
                            "FROM challenges c " +
-                           "JOIN challenge_question cq ON c.id = cq.challenge_id " +
+                           "JOIN challenge_questions cq ON c.id = cq.challenge_id " +
                            "JOIN questions q ON cq.question_id = q.id " +
                            "WHERE NOW() BETWEEN c.start_date AND c.end_date " +
                            "GROUP BY c.id";
@@ -458,7 +458,7 @@ class ClientHandler extends Thread {
     private static List<String> getQuestionsForChallenge(int challengeId) {
         List<String> questions = new ArrayList<>();
         String query = "SELECT q.id, q.question_text FROM questions q " +
-                       "INNER JOIN challenge_question cq ON q.id = cq.question_id " +
+                       "INNER JOIN challenge_questions cq ON q.id = cq.question_id " +
                        "WHERE cq.challenge_id = ?";
         try (PreparedStatement statement = connection.prepareStatement(query)) {
             statement.setInt(1, challengeId);

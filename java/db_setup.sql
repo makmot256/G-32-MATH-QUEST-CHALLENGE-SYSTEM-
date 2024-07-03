@@ -108,3 +108,12 @@ CREATE TABLE administrators (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 );
+
+CREATE TABLE challenge_questions (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    challenge_id INT NOT NULL,
+    question_id INT NOT NULL,
+    -- PRIMARY KEY (challenge_id, question_id),
+    FOREIGN KEY (challenge_id) REFERENCES challenges(id),
+    FOREIGN KEY (question_id) REFERENCES questions(id)
+);

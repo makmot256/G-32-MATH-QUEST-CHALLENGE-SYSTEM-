@@ -8,7 +8,7 @@
 
                     </script>,
                     made with <i class="fa fa-heart"></i> by
-                    G-32.
+                    G-32
                 </div>
             </div>
             <div class="col-lg-6">

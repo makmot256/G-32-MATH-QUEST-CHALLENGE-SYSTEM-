@@ -1,11 +1,17 @@
 import java.io.*;
 import java.net.*;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.sql.*;
 import java.util.Scanner;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+
+// server hangs on attempt challenge and view challenge
+// need to implement more menu stuff on client to reflect what is on the server
 
 public class Server {
 
@@ -63,7 +69,7 @@ class ClientHandler extends Thread {
         }
     }
 
-    private void handleRequest(String request, PrintWriter writer,BufferedReader reader) {
+    private void handleRequest(String request, PrintWriter writer,BufferedReader reader){
         String[] parts = request.split(" ");
         String command = parts[0];
 
@@ -90,6 +96,14 @@ class ClientHandler extends Thread {
             default:
                 writer.println("Invalid command");
         }
+        // Check if the client has closed the connection
+        // if (!reader.ready()) {
+        //     // Handle the end of the input stream
+        //     // For example, you can close the connection or perform any necessary cleanup
+        //     socket.close();
+        //     return;
+        // }
+
     }
 
 
@@ -172,7 +186,7 @@ class ClientHandler extends Thread {
             switch (choice) {
                 case "1":
                     // Implement viewApplicants method for school representative
-                    viewApplicants(scanner, writer);
+                    viewApplicants(writer);
                     break;
                 case "2":
                     writer.println("Logging out...");
@@ -226,13 +240,13 @@ class ClientHandler extends Thread {
             logToTextFile(String.join(" ", parts));
 
             // Check if the applicant is in the rejected_applicants table
-            String checkQuery = "SELECT * FROM rejected_applicants WHERE school_registration_number = ?";
+            String checkQuery = "SELECT * FROM rejected_applicants WHERE username = ?";
             PreparedStatement checkStatement = connection.prepareStatement(checkQuery);
-            checkStatement.setString(1, schoolRegNumber);
+            checkStatement.setString(1, username);
             ResultSet checkResult = checkStatement.executeQuery();
 
             if (checkResult.next()) {
-                writer.println("Registration failed. This school registration number has been rejected previously.");
+                writer.println("Registration failed. This applicant has been rejected previously.");
                 return; 
             }    
 
@@ -289,7 +303,7 @@ class ClientHandler extends Thread {
     }
     // add the confirm participant solely for school representative
     // function to shuffle questions/pick randomly from db
-    private static List<Integer> shuffleQuestions(int challengeId){
+    private List<Integer> shuffleQuestions(int challengeId){
         List<Integer> questionIds = new ArrayList<>();
         try {
             String query = "SELECT question_id FROM challenge_questions WHERE challenge_id = ?";
@@ -310,7 +324,7 @@ class ClientHandler extends Thread {
     }
     // handling email(smtp)
     // login for both participant and school representative
-    private static boolean loginParticipant(Scanner scanner,PrintWriter writer) {
+    private boolean loginParticipant(Scanner scanner,PrintWriter writer) {
         writer.print("Enter username: ");
         writer.flush();
         String username = scanner.nextLine();
@@ -340,7 +354,7 @@ class ClientHandler extends Thread {
         }
     }
 
-    private static boolean loginSchoolRepresentative(Scanner scanner, PrintWriter writer) {
+    private boolean loginSchoolRepresentative(Scanner scanner, PrintWriter writer) {
         writer.print("Enter username: ");
         writer.flush();
         String username = scanner.nextLine();
@@ -382,16 +396,16 @@ class ClientHandler extends Thread {
 
     
 
-    private static void viewChallenges(PrintWriter writer) {
-        // log the participant and their school since their school exists 
-        // send an email immediately to the school representative
+    // log the participant and their school since their school exists 
+    // send an email immediately to the school representative
+    private void viewChallenges(PrintWriter writer) {
         try {
-            String query = "SELECT c.id, c.name, c.start_date, c.end_date, c.duration,c.description, COUNT(q.id) AS num_questions " +
-                           "FROM challenges c " +
-                           "JOIN challenge_questions cq ON c.id = cq.challenge_id " +
-                           "JOIN questions q ON cq.question_id = q.id " +
-                           "WHERE NOW() BETWEEN c.start_date AND c.end_date " +
-                           "GROUP BY c.id";
+            String query = "SELECT c.id, c.name, c.start_date, c.end_date, c.duration, c.description, COUNT(q.id) AS num_questions " +
+                       "FROM challenges c " +
+                       "LEFT JOIN challenge_questions cq ON c.id = cq.challenge_id " +
+                       "LEFT JOIN questions q ON cq.question_id = q.id " +
+                       "WHERE c.end_date >= NOW() " +
+                       "GROUP BY c.id";
             Statement statement = connection.createStatement();
             ResultSet resultSet = statement.executeQuery(query);
     
@@ -414,60 +428,93 @@ class ClientHandler extends Thread {
                 writer.println();
             }
     
-            // Prompt the participant to choose a challenge ID to attempt
-            writer.println("Enter the Challenge ID you want to attempt:");
+            // Indicate the end of challenges listing
+            writer.println("END_OF_CHALLENGES");
             writer.flush();
     
         } catch (SQLException e) {
             e.printStackTrace();
             writer.println("Error viewing challenges: " + e.getMessage());
+            writer.flush();
         }
     }
+    
     
     private void confirmApplicant(String[] parts, PrintWriter writer) {
         String confirm = parts[1];
         String username = parts[2];
         String reason = String.join(" ", Arrays.copyOfRange(parts, 3, parts.length));
-
+    
         try {
             if (confirm.equalsIgnoreCase("yes")) {
                 logToTextFile("confirm yes " + username);
-              
-                String query = "UPDATE participants SET status = 'confirmed' WHERE username = ?";
-                PreparedStatement statement = connection.prepareStatement(query);
-                statement.setString(1, username);
-
-                int rowsUpdated = statement.executeUpdate();
-                if (rowsUpdated > 0) {
+    
+                // Move applicant to participants table
+                String moveToParticipantsQuery = "INSERT INTO participants (username,firstname,lastname,school_registration_number,email,date_of_birth ) SELECT username, firstname, lastname, school_registration_number, email, date_of_birth FROM applicants WHERE username = ?";
+                PreparedStatement moveToParticipantsStmt = connection.prepareStatement(moveToParticipantsQuery);
+                moveToParticipantsStmt.setString(1, username);
+    
+                int rowsInserted = moveToParticipantsStmt.executeUpdate();
+                if (rowsInserted > 0) {
                     writer.println("Participant confirmed successfully!");
+    
+                    // Remove from applicants table
+                    removeFromApplicantsTable(username);
+    
+                    // Remove from file
+                    removeFromFile(username);
+                } else {
+                    writer.println("Error: No matching applicant found to confirm.");
                 }
-                // remove username from applicants.txt
-                removeFromFile(username);
+    
             } else if (confirm.equalsIgnoreCase("no")) {
-                // if (parts.length < 4) {
-                //     writer.println("Error: Reason for rejection not provided.");
-                //     return;
-                // }
                 logToTextFile("confirm no " + username + " " + reason);
-                // Add to rejected table
-                addToRejected(username,reason);
-                // Remove from participants table
-                removeFromParticipants(username);
-                writer.println("Participant rejected successfully with reason: " + reason);
-                // Remove from file
-                removeFromFile(username);
+    
+                // Move applicant to rejected_applicants table
+                String moveToRejectedQuery = "INSERT INTO rejected_applicants (username, reason) SELECT username, ? FROM applicants WHERE username = ?";
+                PreparedStatement moveToRejectedStmt = connection.prepareStatement(moveToRejectedQuery);
+                moveToRejectedStmt.setString(1, reason);
+                moveToRejectedStmt.setString(2, username);
+    
+                int rowsInserted = moveToRejectedStmt.executeUpdate();
+                if (rowsInserted > 0) {
+                    writer.println("Participant rejected successfully with reason: " + reason);
+    
+                    // Remove from applicants table
+                    removeFromApplicantsTable(username);
+    
+                    // Remove from file
+                    removeFromFile(username);
+                } else {
+                    writer.println("Error: No matching applicant found to reject.");
+                }
+    
             } else {
                 writer.println("Invalid confirmation command.");
             }
-
+    
         } catch (SQLException | IOException e) {
             e.printStackTrace();
             writer.println("Error confirming participant: " + e.getMessage());
         }
     }
+    
+    private void removeFromApplicantsTable(String username) throws SQLException {
+        String deleteFromApplicantsQuery = "DELETE FROM applicants WHERE username = ?";
+        PreparedStatement deleteFromApplicantsStmt = connection.prepareStatement(deleteFromApplicantsQuery);
+        deleteFromApplicantsStmt.setString(1, username);
+        deleteFromApplicantsStmt.executeUpdate();
+    }
+    
+    private void removeFromFile(String username) throws IOException {
+        Path path = Paths.get("applicants.txt");
+        List<String> lines = Files.readAllLines(path);
+        lines.removeIf(line -> line.startsWith(username + " "));
+        Files.write(path, lines);
+    }
+    
 
-
-    private static List<String> getQuestionsForChallenge(int challengeId) {
+    private List<String> getQuestionsForChallenge(int challengeId) {
         List<String> questions = new ArrayList<>();
         String query = "SELECT q.id, q.question_text FROM questions q " +
                        "INNER JOIN challenge_questions cq ON q.id = cq.question_id " +
@@ -488,7 +535,7 @@ class ClientHandler extends Thread {
     // TODO: add check to see if challenge is valid
     // TODO: add check to see if user is eligible to participate
 
-    private static void attemptChallenge(Scanner scanner, PrintWriter writer, int challengeId, int participantId) {
+    private void attemptChallenge(Scanner scanner, PrintWriter writer, int challengeId, int participantId) {
         try {
             // Fetch challenge duration from the database
             int challengeDuration = getChallengeDuration(challengeId); // Implement this method to fetch duration
@@ -581,7 +628,7 @@ class ClientHandler extends Thread {
         }
     }
     
-    private static int countAttempts(int participantId, int challengeId) {
+    private int countAttempts(int participantId, int challengeId) {
         int attemptCount = 0;
         try {
             String query = "SELECT COUNT(*) AS attempt_count FROM participant_attempts " +
@@ -599,7 +646,7 @@ class ClientHandler extends Thread {
         return attemptCount;
     }
     
-    private static void displayRemainingTime(long startTime, long endTime, PrintWriter writer) {
+    private void displayRemainingTime(long startTime, long endTime, PrintWriter writer) {
         long currentTime = System.currentTimeMillis();
         long remainingTimeMillis = endTime - currentTime;
     
@@ -612,7 +659,7 @@ class ClientHandler extends Thread {
     }
     
 
-    private static int getChallengeDuration(int challengeId) throws SQLException {
+    private int getChallengeDuration(int challengeId) throws SQLException {
         int duration = 0;
         String query = "SELECT duration FROM challenges WHERE id = ?";
         
@@ -630,7 +677,7 @@ class ClientHandler extends Thread {
     
         
     
-    private static void recordAttempt(int participantId, int challengeId, int questionId, int attemptNumber, boolean isCorrect, int score, long timeTaken) {
+    private void recordAttempt(int participantId, int challengeId, int questionId, int attemptNumber, boolean isCorrect, int score, long timeTaken) {
         String query = "INSERT INTO participant_attempts (participant_id, challenge_id, question_id, attempt_number, is_correct, score, time_taken) " +
                        "VALUES (?, ?, ?, ?, ?, ?, ?)";
         try (PreparedStatement statement = connection.prepareStatement(query)) {
@@ -696,28 +743,28 @@ class ClientHandler extends Thread {
         }
     }
 
-    private void removeFromFile(String username) throws IOException{
-        File inputFile = new File(txtFilePath);
-        File tempFile = new File("tempApplicants.txt");
+    // private void removeFromFile(String username) throws IOException{
+    //     File inputFile = new File(txtFilePath);
+    //     File tempFile = new File("tempApplicants.txt");
 
-        try(BufferedReader reader = new BufferedReader(new FileReader(inputFile));
-            BufferedWriter writer = new BufferedWriter(new FileWriter(tempFile))){
+    //     try(BufferedReader reader = new BufferedReader(new FileReader(inputFile));
+    //         BufferedWriter writer = new BufferedWriter(new FileWriter(tempFile))){
 
-            String line;
-            while((line = reader.readLine())!= null) {
-                if(!line.contains(username)) {
-                    writer.write(line + System.lineSeparator());
-                }
-            }
-        }
+    //         String line;
+    //         while((line = reader.readLine())!= null) {
+    //             if(!line.contains(username)) {
+    //                 writer.write(line + System.lineSeparator());
+    //             }
+    //         }
+    //     }
 
-        if(!inputFile.delete()){
-            System.err.println("Could not delete original file");
-        }
-        if (!tempFile.renameTo(inputFile)) {
-            System.err.println("Could not rename temporary file");
-        }
-    }
+    //     if(!inputFile.delete()){
+    //         System.err.println("Could not delete original file");
+    //     }
+    //     if (!tempFile.renameTo(inputFile)) {
+    //         System.err.println("Could not rename temporary file");
+    //     }
+    // }
 
     private void addToRejected(String username,String reason) throws SQLException{
         String query = "INSERT INTO rejected_applicants (username,reason) VALUES (?,?)";

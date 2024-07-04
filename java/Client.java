@@ -33,7 +33,7 @@ public class Client {
                         register(scanner, writer);
                         break;
                     case "2":
-                        viewChallenges(writer);
+                        viewChallenges(writer,reader);
                         break;
                     case "3":
                         confirmApplicant(scanner, writer);
@@ -79,8 +79,18 @@ public class Client {
         writer.println("register " + username + " " + firstName + " " + lastName + " " + schoolRegNumber + " " + email + " " + dob);
     }
 
-    private static void viewChallenges(PrintWriter writer) {
+    private static void viewChallenges(PrintWriter writer, BufferedReader reader) {
         writer.println("viewChallenges");
+        writer.flush();
+
+        try {
+            String response;
+            while (!(response = reader.readLine()).equals("END_OF_CHALLENGES")) {
+                System.out.println(response);
+            }
+        } catch (IOException e) {
+            System.out.println("Error reading response: " + e.getMessage());
+        }
     }
 
     private static void confirmApplicant(Scanner scanner, PrintWriter writer) {

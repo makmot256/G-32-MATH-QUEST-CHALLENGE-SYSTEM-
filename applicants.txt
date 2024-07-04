@@ -3,3 +3,5 @@ confirm no test6
 confirm no reason
 confirm yes Test1
 confirm yes Test1
+register Test2 Test2 Test2 569808 test2@gmail.com 2021-01-01
+register Test3 test3 test3 569808 test3@gmail.com 2023-10-01

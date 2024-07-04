@@ -84,7 +84,10 @@ class ClientHandler extends Thread {
                 confirmApplicant(parts, writer);
                 break;
             case "attemptChallenge":
-                attemptChallenge(new Scanner(reader), writer, Integer.parseInt(parts[1]), Integer.parseInt(parts[2]));
+                attemptChallenge(new Scanner(reader), writer, String.valueOf(parts[1]), Integer.parseInt(parts[2]));
+                break;
+            case "viewApplicants":
+                viewApplicants(writer);
                 break;
             case "login":
             if ("school".equals(parts[1])) {
@@ -199,24 +202,24 @@ class ClientHandler extends Thread {
         }
     }
     
-    private int getParticipantIdByUsername(String username) {
-        int participantId = -1;
-        try {
-            String query = "SELECT id FROM participants WHERE username = ?";
-            PreparedStatement statement = connection.prepareStatement(query);
-            statement.setString(1, username);
-            ResultSet resultSet = statement.executeQuery();
+    // private int getParticipantIdByUsername(String username) {
+    //     int participantId = -1;
+    //     try {
+    //         String query = "SELECT id FROM participants WHERE username = ?";
+    //         PreparedStatement statement = connection.prepareStatement(query);
+    //         statement.setString(1, username);
+    //         ResultSet resultSet = statement.executeQuery();
     
-            if (resultSet.next()) {
-                participantId = resultSet.getInt("id");
-            }
+    //         if (resultSet.next()) {
+    //             participantId = resultSet.getInt("id");
+    //         }
     
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
+    //     } catch (SQLException e) {
+    //         e.printStackTrace();
+    //     }
     
-        return participantId;
-    }
+    //     return participantId;
+    // }
 
     private static String readPasswordSecurely(PrintWriter writer) {
         Console console = System.console();
@@ -275,11 +278,13 @@ class ClientHandler extends Thread {
     private void viewApplicants(PrintWriter writer)
     {
         try{
-            String query = "SELECT username,firstname,lastname,school_registration_number,email,date_of_birth FROM participants WHERE status = 'pending'";
+            String query = "SELECT username,firstname,lastname,school_registration_number,email,date_of_birth FROM applicants";
             Statement statement = connection.createStatement();
             ResultSet resultSet = statement.executeQuery(query);
 
             // display applicants
+
+            writer.println("\n:: Applicant Details ::");
             while (resultSet.next()) {
                 String username = resultSet.getString("username");
                 String firstName = resultSet.getString("firstname");
@@ -287,7 +292,7 @@ class ClientHandler extends Thread {
                 String schoolRegNumber = resultSet.getString("school_registration_number");
                 String email = resultSet.getString("email");
                 Date dateOfBirth = resultSet.getDate("date_of_birth");
-
+                
                 writer.println("Username: " + username);
                 writer.println("Name: " + firstName + " " + lastName);
                 writer.println("School Registration Number: " + schoolRegNumber);
@@ -296,9 +301,12 @@ class ClientHandler extends Thread {
                 writer.println();
 
             }
+            writer.println();
+            writer.flush();
         } catch (SQLException e) {
             e.printStackTrace();
             writer.println("Error viewing applicants: " + e.getMessage());
+            writer.flush();
         }
     }
     // add the confirm participant solely for school representative
@@ -535,71 +543,83 @@ class ClientHandler extends Thread {
     // TODO: add check to see if challenge is valid
     // TODO: add check to see if user is eligible to participate
 
-    private void attemptChallenge(Scanner scanner, PrintWriter writer, int challengeId, int participantId) {
+    private void attemptChallenge(Scanner scanner, PrintWriter writer, String username, int challengeId) {
         try {
+            // Fetch participant ID from database based on username
+            int participantId = getParticipantIdByUsername(username); // Implement this method to retrieve participant ID
+        
+            // Ensure participant ID is valid
+            if (participantId == -1) {
+                writer.println("Invalid participant username.");
+                return;
+            }
+        
             // Fetch challenge duration from the database
             int challengeDuration = getChallengeDuration(challengeId); // Implement this method to fetch duration
-    
+        
             // Fetch all question IDs for the challenge
             List<Integer> questionIds = shuffleQuestions(challengeId);
             int totalQuestions = questionIds.size();
             int remainingQuestions = totalQuestions;
-    
+        
             // Count existing attempts for this participant and challenge
             int attemptsCount = countAttempts(participantId, challengeId); // Implement this method to count attempts
-    
+        
             // Check if participant has exceeded maximum attempts
+            // user needs to return to menu automatically
             if (attemptsCount >= 3) {
-                writer.println("You have already attempted this challenge three times. Maximum attempts reached.");
+                writer.println("Max Attempts Reached!");
+                writer.flush();
                 return;
             }
-    
+        
             // Timer variables
             long startTime = System.currentTimeMillis();
             long endTime = startTime + (challengeDuration * 60 * 1000); // Convert duration to milliseconds
-    
+        
             int attemptNumber = attemptsCount + 1; // Calculate the attempt number for the current attempt
             // Arrays to store per question data
             long[] questionTimes = new long[totalQuestions];
             boolean[] questionCorrectness = new boolean[totalQuestions];
             int[] questionScores = new int[totalQuestions];
             int totalScore = 0;
-    
+        
             for (int i = 0; i < totalQuestions; i++) {
                 int questionId = questionIds.get(i);
-    
+        
                 // Fetch question details using questionId
                 String query = "SELECT question_text, answer, marks FROM questions WHERE id = ?";
                 PreparedStatement statement = connection.prepareStatement(query);
                 statement.setInt(1, questionId);
                 ResultSet questionResultSet = statement.executeQuery();
-    
+        
                 if (questionResultSet.next()) {
                     String questionText = questionResultSet.getString("question_text");
                     String correctAnswer = questionResultSet.getString("answer");
                     int marks = questionResultSet.getInt("marks");
-    
+        
                     // Display remaining questions and time
                     writer.println("Remaining Questions: " + remainingQuestions);
                     displayRemainingTime(startTime, endTime, writer);
-    
+        
                     // Present question to participant
+                    writer.println("Question ID: " + questionId);
                     writer.println("Question: " + questionText);
                     writer.print("Your answer: ");
                     writer.flush();
-    
+        
                     String userAnswer = scanner.nextLine().trim();
-    
+        
                     // Check answer correctness and record attempt
                     boolean isCorrect = correctAnswer.equalsIgnoreCase(userAnswer);
                     recordAttempt(participantId, challengeId, questionId, attemptNumber, isCorrect, marks, System.currentTimeMillis() - startTime);
-
+    
                     // Store question data
                     questionTimes[i] = System.currentTimeMillis() - startTime;
                     questionCorrectness[i] = isCorrect;
                     questionScores[i] = isCorrect ? marks : 0;
                     totalScore += questionScores[i];
-    
+        
                     if (isCorrect) {
                         writer.println("Correct!");
                     } else {
@@ -607,25 +627,36 @@ class ClientHandler extends Thread {
                     }
                     writer.println();
                 }
-    
+        
                 remainingQuestions--;
-    
+        
                 // Check if time is up
                 if (System.currentTimeMillis() >= endTime) {
                     writer.println("Time's up! Challenge will be closed.");
                     break;
                 }
             }
-    
+        
             // Provide challenge summary after all questions are attempted
-            writer.println("Challenge completed. Provide summary here.");
+            writer.println("Challenge completed. Summary is here:");
             generateChallengeSummary(writer, totalQuestions, questionTimes, questionCorrectness, questionScores, totalScore, System.currentTimeMillis() - startTime);
             writer.flush();
-    
+        
         } catch (SQLException e) {
             e.printStackTrace();
             writer.println("Error during challenge attempt: " + e.getMessage());
         }
+    }
+    
+    private int getParticipantIdByUsername(String username) throws SQLException {
+        String query = "SELECT id FROM participants WHERE username = ?";
+        PreparedStatement statement = connection.prepareStatement(query);
+        statement.setString(1, username);
+        ResultSet resultSet = statement.executeQuery();
+        if (resultSet.next()) {
+            return resultSet.getInt("id");
+        }
+        return -1;  // Return -1 if username is not found
     }
     
     private int countAttempts(int participantId, int challengeId) {

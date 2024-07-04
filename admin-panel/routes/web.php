@@ -1,6 +1,9 @@
 <?php
 
-use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\UserController;
+
+Route::post('import', [UserController::class, 'import'])->name('import');
+Route::get('export', [UserController::class, 'export'])->name('export');
 use Illuminate\Support\Facades\Route;
 
 /*

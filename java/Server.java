@@ -10,9 +10,8 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
-// server hangs on attempt challenge and view challenge
-// need to implement more menu stuff on client to reflect what is on the server
-
+// break down this code, it is too long
+// add login functionality as well as different menus
 public class Server {
 
     private static final int PORT = 8001;
@@ -109,118 +108,6 @@ class ClientHandler extends Thread {
 
     }
 
-
-    private void displayMainMenu(Scanner scanner, PrintWriter writer) {
-        while (true) {
-            writer.println("Main Menu:");
-            writer.println("1. Login as Participant");
-            writer.println("2. Login as School Representative");
-            writer.println("3. Exit");
-            writer.print("Enter your choice: ");
-            writer.flush();
-    
-            String choice = scanner.nextLine().trim();
-    
-            switch (choice) {
-                case "1":
-                    if (loginParticipant(scanner, writer)) {
-                        displayParticipantMenu(scanner, writer);
-                    }
-                    break;
-                case "2":
-                    if (loginSchoolRepresentative(scanner, writer)) {
-                        displaySchoolRepresentativeMenu(scanner, writer);
-                    }
-                    break;
-                case "3":
-                    writer.println("Exiting...");
-                    writer.flush();
-                    return;
-                default:
-                    writer.println("Invalid choice. Please try again.");
-                    writer.flush();
-            }
-        }
-    }
-
-    private void displayParticipantMenu(Scanner scanner, PrintWriter writer) {
-        while (true) {
-            writer.println("Participant Menu:");
-            writer.println("1. View Challenges");
-            writer.println("2. Attempt Challenge");
-            writer.println("3. Logout");
-            writer.print("Enter your choice: ");
-            writer.flush();
-    
-            String choice = scanner.nextLine().trim();
-    
-            switch (choice) {
-                case "1":
-                    // Implement viewChallenges method for participant
-                    break;
-                case "2":
-                    writer.print("Enter Challenge ID to attempt: ");
-                    writer.flush();
-                    int challengeId = Integer.parseInt(scanner.nextLine().trim());
-                    // Implement attemptChallenge method
-                    attemptChallenge(scanner, writer, challengeId, getParticipantIdByUsername(username));
-                    break;
-                case "3":
-                    writer.println("Logging out...");
-                    writer.flush();
-                    return;
-                default:
-                    writer.println("Invalid choice. Please try again.");
-                    writer.flush();
-            }
-        }
-    }
-    
-    private void displaySchoolRepresentativeMenu(Scanner scanner, PrintWriter writer) {
-        while (true) {
-            writer.println("School Representative Menu:");
-            writer.println("1. View Applicants");
-            writer.println("2. Logout");
-            writer.print("Enter your choice: ");
-            writer.flush();
-    
-            String choice = scanner.nextLine().trim();
-    
-            switch (choice) {
-                case "1":
-                    // Implement viewApplicants method for school representative
-                    viewApplicants(writer);
-                    break;
-                case "2":
-                    writer.println("Logging out...");
-                    writer.flush();
-                    return;
-                default:
-                    writer.println("Invalid choice. Please try again.");
-                    writer.flush();
-            }
-        }
-    }
-    
-    // private int getParticipantIdByUsername(String username) {
-    //     int participantId = -1;
-    //     try {
-    //         String query = "SELECT id FROM participants WHERE username = ?";
-    //         PreparedStatement statement = connection.prepareStatement(query);
-    //         statement.setString(1, username);
-    //         ResultSet resultSet = statement.executeQuery();
-    
-    //         if (resultSet.next()) {
-    //             participantId = resultSet.getInt("id");
-    //         }
-    
-    //     } catch (SQLException e) {
-    //         e.printStackTrace();
-    //     }
-    
-    //     return participantId;
-    // }
-
     private static String readPasswordSecurely(PrintWriter writer) {
         Console console = System.console();
         if (console == null) {
@@ -274,7 +161,6 @@ class ClientHandler extends Thread {
     }
 
     // view applicants for school representative so login school rep then show the menu including view applicants
-
     private void viewApplicants(PrintWriter writer)
     {
         try{
@@ -391,19 +277,7 @@ class ClientHandler extends Thread {
             return false;
         }
     }
-    // query the many-to-many relationship between challenge and question pivot table and use it to display the questions in each challenge (done)
-    // checking rejected_applicants table when student tries to register(done)
-    // add details/description of each challenge
-    // record every attempt per question and stop attempts after the maximum of 3
-    //  The questions will be presented one by one and each time a question is presented, the number of remaining questions and time are indicated above the question
-    // we need to implement a timer
-    // wrong answer = -3 marks , not sure = 0 marks , correct answer = marks originally assigned(necessitate a marks column on each question)
-    // can use a pivot table to track attempts(participant_attempts)
-    //  When the time for attempting the question expires, the participant challenge is closed and the participant is given their score and report.
-    // generate report for each participant on close and esepcialy when duration closes. can put it in a dunction that shows scores,time taken for each question and total time for the whole challenge
-
-    
-
+  
     // log the participant and their school since their school exists 
     // send an email immediately to the school representative
     private void viewChallenges(PrintWriter writer) {
@@ -446,7 +320,6 @@ class ClientHandler extends Thread {
             writer.flush();
         }
     }
-    
     
     private void confirmApplicant(String[] parts, PrintWriter writer) {
         String confirm = parts[1];
@@ -519,24 +392,6 @@ class ClientHandler extends Thread {
         List<String> lines = Files.readAllLines(path);
         lines.removeIf(line -> line.startsWith(username + " "));
         Files.write(path, lines);
-    }
-    
-
-    private List<String> getQuestionsForChallenge(int challengeId) {
-        List<String> questions = new ArrayList<>();
-        String query = "SELECT q.id, q.question_text FROM questions q " +
-                       "INNER JOIN challenge_questions cq ON q.id = cq.question_id " +
-                       "WHERE cq.challenge_id = ?";
-        try (PreparedStatement statement = connection.prepareStatement(query)) {
-            statement.setInt(1, challengeId);
-            ResultSet resultSet = statement.executeQuery();
-            while (resultSet.next()) {
-                questions.add(resultSet.getString("question_text"));
-            }
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-        return questions;
     }
     
     // TODO: participant can do as many as possible but cannot do more than one at a time.
@@ -688,7 +543,6 @@ class ClientHandler extends Thread {
             writer.println("Time Remaining: " + remainingSeconds + " seconds");
         }
     }
-    
 
     private int getChallengeDuration(int challengeId) throws SQLException {
         int duration = 0;
@@ -705,9 +559,7 @@ class ClientHandler extends Thread {
         
         return duration;
     }
-    
         
-    
     private void recordAttempt(int participantId, int challengeId, int questionId, int attemptNumber, boolean isCorrect, int score, long timeTaken) {
         String query = "INSERT INTO participant_attempts (participant_id, challenge_id, question_id, attempt_number, is_correct, score, time_taken) " +
                        "VALUES (?, ?, ?, ?, ?, ?, ?)";
@@ -724,8 +576,7 @@ class ClientHandler extends Thread {
             e.printStackTrace();
         }
     }
-        
-        
+            
     private static void generateChallengeSummary(PrintWriter writer, int totalQuestions, long[] questionTimes,boolean[] questionCorrectness, int[] questionScores, int totalScore,long totalTimeTaken) {
         writer.println("Challenge Summary:");
         writer.println("Total Questions: " + totalQuestions);
@@ -741,74 +592,11 @@ class ClientHandler extends Thread {
             writer.println();
         }
     }
-
-    // Simulate user answering logic
-    // private String simulateAnswer(String questionText) {
-    //     Scanner scanner = new Scanner(System.in);
-    //     System.out.print("Enter your answer for \"" + questionText + "\": ");
-    //     scanner.close();
-    //     return scanner.nextLine().trim();
-    // }
+  
     
-    
-    private void logForChallenges(String logMessage) {
-        String logFilePath = "challenge_log.txt";
-
-        try (BufferedWriter writer = new BufferedWriter(new FileWriter(logFilePath, true))) {
-            writer.write(logMessage + "\n\n");
-        } catch (IOException e) {
-            e.printStackTrace();
-            System.err.println("Error writing to log file: " + e.getMessage());
-        }
-    }
-
-    // private boolean simulateAnswer(int questionId) {
-    //     // Replace with actual user input handling logic
-    //     // For simulation purposes, let's assume all answers are correct
-    //     return true;
-    // }
-
     private void logToTextFile(String data) throws IOException {
         try(BufferedWriter writer = new BufferedWriter(new FileWriter(txtFilePath,true))){
             writer.write(data + System.lineSeparator());
         }
-    }
-
-    // private void removeFromFile(String username) throws IOException{
-    //     File inputFile = new File(txtFilePath);
-    //     File tempFile = new File("tempApplicants.txt");
-
-    //     try(BufferedReader reader = new BufferedReader(new FileReader(inputFile));
-    //         BufferedWriter writer = new BufferedWriter(new FileWriter(tempFile))){
-
-    //         String line;
-    //         while((line = reader.readLine())!= null) {
-    //             if(!line.contains(username)) {
-    //                 writer.write(line + System.lineSeparator());
-    //             }
-    //         }
-    //     }
-
-    //     if(!inputFile.delete()){
-    //         System.err.println("Could not delete original file");
-    //     }
-    //     if (!tempFile.renameTo(inputFile)) {
-    //         System.err.println("Could not rename temporary file");
-    //     }
-    // }
-
-    private void addToRejected(String username,String reason) throws SQLException{
-        String query = "INSERT INTO rejected_applicants (username,reason) VALUES (?,?)";
-        PreparedStatement statement = connection.prepareStatement(query);
-        statement.setString(1,username);
-        statement.setString(2,reason);
-        statement.executeUpdate();
-    }
-
-    private void removeFromParticipants(String username) throws SQLException {
-        String query = "DELETE FROM participants WHERE username = ?";
-        PreparedStatement statement = connection.prepareStatement(query);
-        statement.setString(1, username);
-        statement.executeUpdate();
     }
 }

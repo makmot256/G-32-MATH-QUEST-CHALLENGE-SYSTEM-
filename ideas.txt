@@ -14,3 +14,14 @@ An email notification is sent for all cases. If one tries to register again unde
 rejected, they are informed on the command line interface and denied from registering under the school."
 -necessitating an applicants table then moving confirmed into the participants table
 
+
+    // query the many-to-many relationship between challenge and question pivot table and use it to display the questions in each challenge (done)
+    // checking rejected_applicants table when student tries to register(done)
+    // add details/description of each challenge
+    // record every attempt per question and stop attempts after the maximum of 3
+    //  The questions will be presented one by one and each time a question is presented, the number of remaining questions and time are indicated above the question
+    // we need to implement a timer
+    // wrong answer = -3 marks , not sure = 0 marks , correct answer = marks originally assigned(necessitate a marks column on each question)
+    // can use a pivot table to track attempts(participant_attempts)
+    //  When the time for attempting the question expires, the participant challenge is closed and the participant is given their score and report.
+    // generate report for each participant on close and esepcialy when duration closes. can put it in a dunction that shows scores,time taken for each question and total time for the whole challenge

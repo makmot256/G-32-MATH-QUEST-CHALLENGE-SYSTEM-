@@ -9,6 +9,9 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.Properties;
+import javax.mail.*;
+import javax.mail.internet.*;
 
 // break down this code, it is too long
 // add login functionality as well as different menus
@@ -42,9 +45,17 @@ class ClientHandler extends Thread {
     private final Socket socket;
     private final Connection connection;
     private final String txtFilePath = "applicants.txt"; 
+    private Properties emailProperties;
+
     public ClientHandler(Socket socket, Connection connection) {
         this.socket = socket;
         this.connection = connection;
+        emailProperties = new Properties();
+        emailProperties.put("mail.smtp.host", "smtp.zoho.com");
+        emailProperties.put("mail.smtp.socketFactory.port", "465");
+        emailProperties.put("mail.smtp.socketFactory.class", "javax.net.ssl.SSLSocketFactory");
+        emailProperties.put("mail.smtp.auth", "true");
+        emailProperties.put("mail.smtp.port", "465");
     }
 
     public void run() {
@@ -89,7 +100,7 @@ class ClientHandler extends Thread {
                 viewApplicants(writer);
                 break;
             case "login":
-            if ("school".equals(parts[1])) {
+            if ("school_representative".equals(parts[1])) {
                 loginSchoolRepresentative(new Scanner(reader), writer);
             } else if ("participant".equals(parts[1])) {
                 loginParticipant(new Scanner(reader), writer);
@@ -108,14 +119,7 @@ class ClientHandler extends Thread {
 
     }
 
-    private static String readPasswordSecurely(PrintWriter writer) {
-        Console console = System.console();
-        if (console == null) {
-            throw new RuntimeException("No console available");
-        }
-        char[] passwordArray = console.readPassword("Enter password: ");
-        return new String(passwordArray);
-    }
+    
 
     private void registerApplicant(String[] parts, PrintWriter writer) {
         String username = parts[1];
@@ -124,6 +128,8 @@ class ClientHandler extends Thread {
         String schoolRegNumber = parts[4];
         String email = parts[5];
         String dob = parts[6];
+        String password = parts[7];
+        String repUsernameResult = null;
 
         try {
             // logToTextFile("register " + username + " " + firstName + " " + lastName + " " + schoolRegNumber + " " + email + " " + dob);
@@ -140,7 +146,7 @@ class ClientHandler extends Thread {
                 return; 
             }    
 
-            String query = "INSERT INTO applicants (username, firstname, lastname, school_registration_number, email, date_of_birth) VALUES (?, ?, ?, ?, ?, ?)";
+            String query = "INSERT INTO applicants (username, firstname, lastname, school_registration_number, email, date_of_birth,password) VALUES (?, ?, ?, ?, ?, ?,?)";
             PreparedStatement statement = connection.prepareStatement(query);
             statement.setString(1, username);
             statement.setString(2, firstName);
@@ -148,10 +154,16 @@ class ClientHandler extends Thread {
             statement.setString(4, schoolRegNumber);
             statement.setString(5, email);
             statement.setDate(6, Date.valueOf(dob));
+            statement.setString(7, password);
 
             int rowsInserted = statement.executeUpdate();
             if (rowsInserted > 0) {
                 writer.println("Applicant registered successfully!");
+                // Get the representative email for the school
+                String representativeEmail = getRepresentativeEmailBySchoolRegNumber(schoolRegNumber);
+
+                // Send email notification to the representative
+                sendEmailNotificationToRepresentative(representativeEmail, "Confirmation", "Please confirm the applicant: " + username);
             }
 
         } catch (SQLException | IOException e) {
@@ -159,6 +171,19 @@ class ClientHandler extends Thread {
             writer.println("Error registering applicant: " + e.getMessage());
         }
     }
+
+    private String getRepresentativeEmailBySchoolRegNumber(String schoolRegNumber) throws SQLException {
+        String query = "SELECT representative_email FROM schools WHERE school_registration_number = ?";
+        PreparedStatement stmt = connection.prepareStatement(query);
+        stmt.setString(1, schoolRegNumber);
+        ResultSet rs = stmt.executeQuery();
+        if (rs.next()) {
+            return rs.getString("representative_email");
+        } else {
+            throw new SQLException("No representative email found for school registration number: " + schoolRegNumber);
+        }
+    }
+    
 
     // view applicants for school representative so login school rep then show the menu including view applicants
     private void viewApplicants(PrintWriter writer)
@@ -219,13 +244,15 @@ class ClientHandler extends Thread {
     // handling email(smtp)
     // login for both participant and school representative
     private boolean loginParticipant(Scanner scanner,PrintWriter writer) {
-        writer.print("Enter username: ");
-        writer.flush();
-        String username = scanner.nextLine();
-
-        String password = readPasswordSecurely(writer);
-
         try {
+            // writer.print("Enter username: ");
+            // writer.flush();
+            String username = scanner.nextLine();
+
+            // writer.print("Enter password: ");
+            // writer.flush();
+            String password = scanner.nextLine().trim();
+
             String query = "SELECT * FROM participants WHERE username = ? AND password = ?";
             PreparedStatement statement = connection.prepareStatement(query);
             statement.setString(1, username);
@@ -249,11 +276,13 @@ class ClientHandler extends Thread {
     }
 
     private boolean loginSchoolRepresentative(Scanner scanner, PrintWriter writer) {
-        writer.print("Enter username: ");
-        writer.flush();
+        // writer.print("Enter username: ");
+        // writer.flush();
         String username = scanner.nextLine();
 
-        String password = readPasswordSecurely(writer);
+        // writer.print("Enter password: ");
+        // writer.flush();
+        String password = scanner.nextLine().trim();
 
         try {
             String query = "SELECT * FROM school_representatives WHERE username = ? AND password = ?";
@@ -313,6 +342,7 @@ class ClientHandler extends Thread {
             // Indicate the end of challenges listing
             writer.println("END_OF_CHALLENGES");
             writer.flush();
+
     
         } catch (SQLException e) {
             e.printStackTrace();
@@ -331,7 +361,7 @@ class ClientHandler extends Thread {
                 logToTextFile("confirm yes " + username);
     
                 // Move applicant to participants table
-                String moveToParticipantsQuery = "INSERT INTO participants (username,firstname,lastname,school_registration_number,email,date_of_birth ) SELECT username, firstname, lastname, school_registration_number, email, date_of_birth FROM applicants WHERE username = ?";
+                String moveToParticipantsQuery = "INSERT INTO participants (username,firstname,lastname,school_registration_number,email,date_of_birth,password) SELECT username, firstname, lastname, school_registration_number, email, date_of_birth,password FROM applicants WHERE username = ?";
                 PreparedStatement moveToParticipantsStmt = connection.prepareStatement(moveToParticipantsQuery);
                 moveToParticipantsStmt.setString(1, username);
     
@@ -344,6 +374,12 @@ class ClientHandler extends Thread {
     
                     // Remove from file
                     removeFromFile(username);
+
+                    // Send email notification to participant
+                    sendEmailNotification(getEmailForParticipant(username), "Confirmation", "You have been confirmed as a participant.");
+
+                    // Send email notification to school representative
+                    sendEmailNotificationToRepresentative(getEmailForRep(username), "Confirmation", "Please confirm the applicant: " + username);
                 } else {
                     writer.println("Error: No matching applicant found to confirm.");
                 }
@@ -366,6 +402,8 @@ class ClientHandler extends Thread {
     
                     // Remove from file
                     removeFromFile(username);
+
+                    sendEmailNotification(username, "Rejection", "Your application has been rejected. Reason: " + reason);
                 } else {
                     writer.println("Error: No matching applicant found to reject.");
                 }
@@ -374,12 +412,69 @@ class ClientHandler extends Thread {
                 writer.println("Invalid confirmation command.");
             }
     
-        } catch (SQLException | IOException e) {
+        } catch (SQLException | IOException | MessagingException e) {
             e.printStackTrace();
             writer.println("Error confirming participant: " + e.getMessage());
         }
     }
     
+
+    private String getEmailForRep(String username) throws SQLException{
+        String query = "SELECT email FROM school_representatives WHERE username = ?";
+        PreparedStatement statement = connection.prepareStatement(query);
+        statement.setString(1, username);
+        ResultSet resultSet = statement.executeQuery();
+        if (resultSet.next()) {
+            return resultSet.getString("email");
+        }
+        return "not found";
+    }
+
+    private String getEmailForParticipant(String username) throws SQLException{
+        String query = "SELECT email FROM participants WHERE username = ?";
+        PreparedStatement statement = connection.prepareStatement(query);
+        statement.setString(1, username);
+        ResultSet resultSet = statement.executeQuery();
+        if (resultSet.next()) {
+            return resultSet.getString("email");
+        }
+        return "not found";
+    }
+
+    private void sendEmailNotification(String recipientEmail, String subject, String messageBody) throws MessagingException {
+        Session session = Session.getInstance(emailProperties,
+            new javax.mail.Authenticator() {
+                protected javax.mail.PasswordAuthentication getPasswordAuthentication() {
+                    return new javax.mail.PasswordAuthentication("imwesigwa@fltug.com", "btzHkJwHSKPQ");
+                }
+            });
+
+        Message message = new MimeMessage(session);
+        message.setFrom(new InternetAddress("imwesigwa@fltug.com"));
+        message.setRecipients(Message.RecipientType.TO, InternetAddress.parse(recipientEmail));
+        message.setSubject(subject);
+        message.setText(messageBody);
+
+        Transport.send(message);
+        System.out.println("Email notification sent successfully to " + recipientEmail);
+    }
+
+    private void sendEmailNotificationToRepresentative(String username, String subject, String messageBody) {
+        // Retrieve representative's email from database or use a predefined list
+        String representativeEmail = getRepresentativeEmail(username);
+
+        if (representativeEmail != null && !representativeEmail.isEmpty()) {
+            try {
+                sendEmailNotification(representativeEmail, subject, messageBody);
+            } catch (MessagingException e) {
+                e.printStackTrace();
+                System.out.println("Error sending email to school representative: " + e.getMessage());
+            }
+        } else {
+            System.out.println("School representative email not found for username: " + username);
+        }
+    }
+
     private void removeFromApplicantsTable(String username) throws SQLException {
         String deleteFromApplicantsQuery = "DELETE FROM applicants WHERE username = ?";
         PreparedStatement deleteFromApplicantsStmt = connection.prepareStatement(deleteFromApplicantsQuery);
@@ -598,5 +693,11 @@ class ClientHandler extends Thread {
         try(BufferedWriter writer = new BufferedWriter(new FileWriter(txtFilePath,true))){
             writer.write(data + System.lineSeparator());
         }
+    }
+
+    private String getRepresentativeEmail(String username) {
+        // Implement retrieving representative's email from database
+        // write query based on username
+        return "imwesigwa@fltug.com"; // Dummy implementation
     }
 }

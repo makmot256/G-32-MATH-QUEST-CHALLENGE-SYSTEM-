@@ -11,6 +11,8 @@ CREATE TABLE schools (
     representative_email VARCHAR(255) NOT NULL,
     representative_name VARCHAR(255) NOT NULL,
     -- validated BOOLEAN DEFAULT FALSE,
+    FOREIGN KEY (representative_email) REFERENCES school_representatives(email),
+    FOREIGN KEY (representative_name) REFERENCES school_representatives(name),
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 );
@@ -25,6 +27,7 @@ CREATE TABLE participants (
     email VARCHAR(255) NOT NULL,
     date_of_birth DATE NOT NULL,
     status VARCHAR(255) NOT NULL DEFAULT 'confirmed',
+    password VARCHAR(255) NOT NULL,
     FOREIGN KEY (school_registration_number) REFERENCES schools(school_registration_number),
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
@@ -39,6 +42,7 @@ CREATE TABLE applicants (
     school_registration_number VARCHAR(255),
     email VARCHAR(255) NOT NULL,
     date_of_birth DATE NOT NULL,
+    password VARCHAR(255) NOT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 );
@@ -101,6 +105,7 @@ CREATE TABLE school_representatives (
     firstname VARCHAR(255) NOT NULL,
     lastname VARCHAR(255) NOT NULL,
     email VARCHAR(255) NOT NULL,
+    password VARCHAR(255) NOT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 );

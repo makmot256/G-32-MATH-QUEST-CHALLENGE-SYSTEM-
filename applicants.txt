@@ -5,3 +5,7 @@ confirm yes Test1
 confirm yes Test1
 register Test2 Test2 Test2 569808 test2@gmail.com 2021-01-01
 register Test3 test3 test3 569808 test3@gmail.com 2023-10-01
+register Test4 test4 test4 939795 test4@gmail.com 2023-01-01 test4
+confirm yes Test2
+confirm yes Test3
+confirm yes Test4

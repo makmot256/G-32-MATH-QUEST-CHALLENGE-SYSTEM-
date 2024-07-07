@@ -20,10 +20,10 @@
                     <div class="col-auto my-auto">
                         <div class="h-100">
                             <h5 class="mb-1">
-                                Richard Davis
+                              G-32 
                             </h5>
                             <p class="mb-0 font-weight-normal text-sm">
-                                CEO / Co-Founder
+                                FOUNDER 
                             </p>
                         </div>
                     </div>
@@ -70,8 +70,8 @@
                                                 <input class="form-check-input ms-auto" type="checkbox"
                                                     id="flexSwitchCheckDefault" checked>
                                                 <label class="form-check-label text-body ms-3 text-truncate w-80 mb-0"
-                                                    for="flexSwitchCheckDefault">Email me when someone follows
-                                                    me</label>
+                                                    for="flexSwitchCheckDefault">Email me when a participant  logs in
+                                                </label>
                                             </div>
                                         </li>
                                         <li class="list-group-item border-0 px-0">
@@ -79,8 +79,8 @@
                                                 <input class="form-check-input ms-auto" type="checkbox"
                                                     id="flexSwitchCheckDefault1">
                                                 <label class="form-check-label text-body ms-3 text-truncate w-80 mb-0"
-                                                    for="flexSwitchCheckDefault1">Email me when someone answers on
-                                                    my post</label>
+                                                    for="flexSwitchCheckDefault1">Email me when a participant hands in there challenge
+                                                    </label>
                                             </div>
                                         </li>
                                         <li class="list-group-item border-0 px-0">

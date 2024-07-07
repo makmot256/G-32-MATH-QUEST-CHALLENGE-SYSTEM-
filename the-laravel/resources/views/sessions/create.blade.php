@@ -11,7 +11,7 @@
         </div>
         <main class="main-content  mt-0">
             <div class="page-header align-items-start min-vh-100"
-                style="background-image: url('myMaths.jpg');">
+                style="background-image: url('myImage.jpg');">
                 <span class="mask bg-gradient-dark opacity-6"></span>
                 <div class="container mt-5">
                     <div class="row signin-margin">

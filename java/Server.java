@@ -116,14 +116,6 @@ class ClientHandler extends Thread {
                 writer.println("Invalid command");
                 break;
         }
-        // Check if the client has closed the connection
-        // if (!reader.ready()) {
-        //     // Handle the end of the input stream
-        //     // For example, you can close the connection or perform any necessary cleanup
-        //     socket.close();
-        //     return;
-        // }
-
     }
 
     
@@ -520,10 +512,7 @@ class ClientHandler extends Thread {
             long endTime = startTime + (challengeDuration * 60 * 1000); // Convert duration to milliseconds
         
             int attemptNumber = attemptsCount + 1; // Calculate the attempt number for the current attempt
-            // Arrays to store per question data
-            // long[] questionTimes = new long[totalQuestions];
-            // boolean[] questionCorrectness = new boolean[totalQuestions];
-            // int[] questionScores = new int[totalQuestions];
+            // Array to store per question data
             List<String> reportLines = new ArrayList<>();
             int totalScore = 0;
         
@@ -556,24 +545,28 @@ class ClientHandler extends Thread {
                     // Check answer correctness and record attempt
                     boolean isCorrect = correctAnswer.equalsIgnoreCase(userAnswer);
                     recordAttempt(participantId, challengeId, questionId, attemptNumber, isCorrect, marks, System.currentTimeMillis() - startTime);
-    
+                    // Format feedback
+                    StringBuilder feedback = new StringBuilder();
+                    feedback.append(userAnswer);
+                    feedback.append(", ").append(isCorrect ? "Correct!" : "Incorrect! Correct answer was: " + correctAnswer);
+
+                    // Print feedback to writer
+                    writer.println(feedback.toString());
+                    writer.println();
+
+                    long timeTakenSeconds = (System.currentTimeMillis() - startTime) / 1000;
+                    totalScore += (isCorrect ? marks : 0);
                     // Store question data
                     String reportLine = "Question ID: " + questionId + "\n" +
+                                    "Question: " + questionText + "\n" +
                                     "Your Answer: " + userAnswer + "\n" +
                                     "Correct Answer: " + correctAnswer + "\n" +
                                     "Correct: " + isCorrect + "\n" +
                                     "Score: " + (isCorrect ? marks : 0) + "\n" +
-                                    "Time Taken: " + (System.currentTimeMillis() - startTime) + " ms\n";
+                                    "Time Taken: " + timeTakenSeconds + " seconds" +"\n" +
+                                    "Total Score: " + totalScore + "\n" +
+                                    "\n";
                     reportLines.add(reportLine);
-
-                    totalScore += (isCorrect ? marks : 0);
-        
-                    if (isCorrect) {
-                        writer.println("Correct!");
-                    } else {
-                        writer.println("Incorrect! Correct answer was: " + correctAnswer);
-                    }
-                    writer.println();
                 }
         
                 remainingQuestions--;

@@ -17,41 +17,7 @@ public class Client {
             BufferedReader reader = new BufferedReader(new InputStreamReader(input));
 
             Scanner scanner = new Scanner(System.in);
-            String text;
-
-            do {
-                // Display main menu
-                displayMainMenu();
-
-                // Get user input
-                System.out.print("Choose an option: ");
-                text = scanner.nextLine();
-
-                switch (text) {
-                    case "1":
-                        registerApplicant(scanner, writer,reader);
-                        break;
-                    case "2":
-                        loginParticipant(scanner, writer, reader);
-                        break;
-                    case "3":
-                        loginSchoolRepresentative(scanner, writer, reader);
-                        break;
-                    case "4":
-                        writer.println("Bye!");
-                        break;
-                    default:
-                        System.out.println("Invalid option");
-                        continue;
-                }
-
-                // Read and display server responses
-                String response;
-                while ((response = reader.readLine()) != null && !response.isEmpty()) {
-                    System.out.println(response);
-                }
-
-            } while (!text.equals("4"));
+            handleMainMenuOptions(scanner, writer, reader);
 
         } catch (UnknownHostException ex) {
             System.out.println("Server not found: " + ex.getMessage());
@@ -168,7 +134,12 @@ public class Client {
                     attemptChallenge(scanner, writer, reader);
                     break;
                 case "3":
-                    writer.println("logout");
+                    displayMainMenu();
+                    try {
+                        handleMainMenuOptions(scanner, writer, reader);
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
                     break;
                 default:
                     System.out.println("Invalid option");
@@ -181,6 +152,8 @@ public class Client {
                 try {
                     while ((response = reader.readLine()) != null && !response.isEmpty()) {
                         System.out.println(response);
+                        if (response.equals("Invalid command")) {
+                        }
                     }
                 } catch (IOException e) {
                     System.out.println("Error reading response: " + e.getMessage());
@@ -235,7 +208,9 @@ public class Client {
                     registerSchool(scanner, writer,reader);
                     break;
                 case "4":
-                    writer.println("logout");
+                    // writer.println("Logged out");
+                    // writer.flush();
+                    displayMainMenu();
                     break;
                 default:
                     System.out.println("Invalid option");
@@ -366,45 +341,77 @@ public class Client {
 
             String serverResponse;
             while ((serverResponse = reader.readLine()) != null) {
-                System.out.println(serverResponse);
+                System.out.println(serverResponse);// Read server's response for question text
+                if (serverResponse.startsWith("Question: ")) {
+                    // Display question text
+                    // String questionText = serverResponse.substring("Question: ".length()).trim();
+                    // System.out.println("Question: " + questionText);
+                    System.out.println(serverResponse);
 
-                if (serverResponse.startsWith("Question ID: ")) {
-                    // Extract question ID from server response
-                    int questionId = Integer.parseInt(serverResponse.substring(serverResponse.indexOf(':') + 2).trim());
+                    // Ask for participant's answer
+                    System.out.print("Your answer: ");
+                    String answer = scanner.nextLine();
 
-                    // Query the server for question text
-                    writer.println("getQuestionText " + questionId);
-
-                    // Read server's response for question text
-                    String questionTextResponse = reader.readLine();
-                    if (questionTextResponse.startsWith("Question: ")) {
-                        // Display question text
-                        String questionText = questionTextResponse.substring("Question: ".length()).trim();
-                        System.out.println("Question: " + questionText);
-
-                        // Ask for participant's answer
-                        System.out.print("Your answer: ");
-                        String answer = scanner.nextLine();
-
-                        // Send answer to the server
-                        writer.println(answer);
-                    } else {
-                        System.out.println("Error fetching question text.");
-                    }
+                    // Send answer to the server
+                    writer.println(answer);
                 } else if (serverResponse.equals("Max Attempts Reached!")) {
-                    System.out.println("You have already attempted this challenge three times. Maximum attempts reached.");
-                    System.out.println("Returning to main menu...");
-                    displayParticipantMenu();
-                    handleParticipantOptions(scanner, writer, reader);
+                    System.out.println("You have already attempted this challenge three times already.");
                     break;
                 } else if (serverResponse.equals("Invalid participant username.")) {
                     break;
-                } else if (serverResponse.contains("Challenge Summary")) {
+                } else if (serverResponse.contains("Challenge completed.")) {
+                    break;
+                }else if(serverResponse.contains("Invalid command")){
+                    System.out.println(" ");
                     break;
                 }
             }
+            displayParticipantMenu();
+            handleParticipantOptions(scanner, writer, reader);
         } catch (IOException e) {
             System.out.println("Error during challenge attempt: " + e.getMessage());
         }
     }
+
+    private static void handleMainMenuOptions(Scanner scanner, PrintWriter writer, BufferedReader reader) throws IOException {
+        String text;
+
+            do {
+                // Display main menu
+                displayMainMenu();
+
+                // Get user input
+                System.out.print("Choose an option: ");
+                text = scanner.nextLine();
+
+                switch (text) {
+                    case "1":
+                        registerApplicant(scanner, writer,reader);
+                        break;
+                    case "2":
+                        loginParticipant(scanner, writer, reader);
+                        break;
+                    case "3":
+                        loginSchoolRepresentative(scanner, writer, reader);
+                        break;
+                    case "4":
+                        writer.println("Bye!");
+                        break;
+                    default:
+                        System.out.println("Invalid option");
+                        continue;
+                }
+
+                // Read and display server responses
+                String response;
+                while ((response = reader.readLine()) != null && !response.isEmpty()) {
+                    // System.out.println(response);
+                    if (response.equals("Invalid command")) {
+                        System.exit(0);
+                    }
+                }
+
+            } while (!text.equals("4")); 
+    }
+
 }

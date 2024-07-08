@@ -93,34 +93,9 @@
                                             </div>
                                         </li>
                                     </ul>
-                                    <h6 class="text-uppercase text-body text-xs font-weight-bolder mt-4">Application
+                                    <h6 class="text-uppercase text-body text-xs font-weight-bolder mt-4">
                                     </h6>
-                                    <ul class="list-group">
-                                        <li class="list-group-item border-0 px-0">
-                                            <div class="form-check form-switch ps-0">
-                                                <input class="form-check-input ms-auto" type="checkbox"
-                                                    id="flexSwitchCheckDefault3">
-                                                <label class="form-check-label text-body ms-3 text-truncate w-80 mb-0"
-                                                    for="flexSwitchCheckDefault3">New launches and projects</label>
-                                            </div>
-                                        </li>
-                                        <li class="list-group-item border-0 px-0">
-                                            <div class="form-check form-switch ps-0">
-                                                <input class="form-check-input ms-auto" type="checkbox"
-                                                    id="flexSwitchCheckDefault4" checked>
-                                                <label class="form-check-label text-body ms-3 text-truncate w-80 mb-0"
-                                                    for="flexSwitchCheckDefault4">Monthly product updates</label>
-                                            </div>
-                                        </li>
-                                        <li class="list-group-item border-0 px-0 pb-0">
-                                            <div class="form-check form-switch ps-0">
-                                                <input class="form-check-input ms-auto" type="checkbox"
-                                                    id="flexSwitchCheckDefault5">
-                                                <label class="form-check-label text-body ms-3 text-truncate w-80 mb-0"
-                                                    for="flexSwitchCheckDefault5">Subscribe to newsletter</label>
-                                            </div>
-                                        </li>
-                                    </ul>
+                                    
                                 </div>
                             </div>
                         </div>
@@ -129,7 +104,7 @@
                                 <div class="card-header pb-0 p-3">
                                     <div class="row">
                                         <div class="col-md-8 d-flex align-items-center">
-                                            <h6 class="mb-0">Profile Information</h6>
+                                            <h6 class="mb-0">About</h6>
                                         </div>
                                         <div class="col-md-4 text-end">
                                             <a href="javascript:;">
@@ -142,20 +117,18 @@
                                 </div>
                                 <div class="card-body p-3">
                                     <p class="text-sm">
-                                        Hi, I’m Alec Thompson, Decisions: If you can’t decide, the answer is no. If
-                                        two equally difficult paths, choose the one more painful in the short term
-                                        (pain avoidance is creating an illusion of equality).
+                                    Passionate about promoting math education through engaging challenges and competitions. Committed to fostering a community of young mathematicians and problem solvers.
                                     </p>
                                     <hr class="horizontal gray-light my-4">
                                     <ul class="list-group">
                                         <li class="list-group-item border-0 ps-0 pt-0 text-sm"><strong
-                                                class="text-dark">Full Name:</strong> &nbsp; Alec M. Thompson</li>
+                                                class="text-dark">Full Name:</strong> &nbsp; G-32</li>
                                         <li class="list-group-item border-0 ps-0 text-sm"><strong
-                                                class="text-dark">Mobile:</strong> &nbsp; (44) 123 1234 123</li>
+                                                class="text-dark">Mobile:</strong> &nbsp; (+256764378980)</li>
                                         <li class="list-group-item border-0 ps-0 text-sm"><strong
-                                                class="text-dark">Email:</strong> &nbsp; alecthompson@mail.com</li>
+                                                class="text-dark">Email:</strong> &nbsp; g32@gmail.com</li>
                                         <li class="list-group-item border-0 ps-0 text-sm"><strong
-                                                class="text-dark">Location:</strong> &nbsp; USA</li>
+                                                class="text-dark">Location:</strong> &nbsp; UGANDA</li>
                                         <li class="list-group-item border-0 ps-0 pb-0">
                                             <strong class="text-dark text-sm">Social:</strong> &nbsp;
                                             <a class="btn btn-facebook btn-simple mb-0 ps-1 pe-2 py-0"

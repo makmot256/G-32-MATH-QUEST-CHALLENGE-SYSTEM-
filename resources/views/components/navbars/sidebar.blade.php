@@ -124,10 +124,7 @@
         <div class="mx-3">
            
         </div>
-        <div class="mx-3">
-            <a class="btn bg-gradient-primary w-100" href="../../documentation/getting-started/installation.html" target="_blank">View documentation</a>
-        </div>
-        <div class="mx-3">
+       
             
         </div>
     </div>

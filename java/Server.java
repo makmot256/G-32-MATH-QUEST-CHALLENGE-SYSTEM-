@@ -12,9 +12,12 @@ import java.util.List;
 import java.util.Properties;
 import javax.mail.*;
 import javax.mail.internet.*;
+import com.itextpdf.text.Document;
+import com.itextpdf.text.DocumentException;
+import com.itextpdf.text.Paragraph;
+import com.itextpdf.text.pdf.PdfWriter;
 
-// break down this code, it is too long
-// add login functionality as well as different menus
+
 public class Server {
 
     private static final int PORT = 8001;
@@ -87,6 +90,9 @@ class ClientHandler extends Thread {
             case "register":
                 registerApplicant(parts, writer);
                 break;
+            case "registerSchool":
+                registerSchool(parts, writer);
+                break;
             case "viewChallenges":
                 viewChallenges(writer);
                 break;
@@ -100,14 +106,15 @@ class ClientHandler extends Thread {
                 viewApplicants(writer);
                 break;
             case "login":
-            if ("school_representative".equals(parts[1])) {
-                loginSchoolRepresentative(new Scanner(reader), writer);
-            } else if ("participant".equals(parts[1])) {
-                loginParticipant(new Scanner(reader), writer);
-            }
-            break;
+                if ("school_representative".equals(parts[1])) {
+                    loginSchoolRepresentative(new Scanner(reader), writer);
+                } else if ("participant".equals(parts[1])) {
+                    loginParticipant(new Scanner(reader), writer);
+                }
+                break;
             default:
                 writer.println("Invalid command");
+                break;
         }
         // Check if the client has closed the connection
         // if (!reader.ready()) {
@@ -120,7 +127,6 @@ class ClientHandler extends Thread {
     }
 
     
-
     private void registerApplicant(String[] parts, PrintWriter writer) {
         String username = parts[1];
         String firstName = parts[2];
@@ -129,10 +135,8 @@ class ClientHandler extends Thread {
         String email = parts[5];
         String dob = parts[6];
         String password = parts[7];
-        String repUsernameResult = null;
 
         try {
-            // logToTextFile("register " + username + " " + firstName + " " + lastName + " " + schoolRegNumber + " " + email + " " + dob);
             logToTextFile(String.join(" ", parts));
 
             // Check if the applicant is in the rejected_applicants table
@@ -162,11 +166,15 @@ class ClientHandler extends Thread {
                 // Get the representative email for the school
                 String representativeEmail = getRepresentativeEmailBySchoolRegNumber(schoolRegNumber);
 
-                // Send email notification to the representative
-                sendEmailNotificationToRepresentative(representativeEmail, "Confirmation", "Please confirm the applicant: " + username);
+                if (representativeEmail != null && !representativeEmail.equals("not found") && !representativeEmail.isEmpty()) {
+                    // Send email notification to representative
+                    sendEmailNotification(representativeEmail, "Confirmation", "Please confirm the applicant: " + username);
+                } else {
+                    writer.println("Error: Representative email not found for school registration number: " + schoolRegNumber);
+                }
             }
 
-        } catch (SQLException | IOException e) {
+        } catch (SQLException | IOException | MessagingException e) {
             e.printStackTrace();
             writer.println("Error registering applicant: " + e.getMessage());
         }
@@ -379,7 +387,7 @@ class ClientHandler extends Thread {
                     sendEmailNotification(getEmailForParticipant(username), "Confirmation", "You have been confirmed as a participant.");
 
                     // Send email notification to school representative
-                    sendEmailNotificationToRepresentative(getEmailForRep(username), "Confirmation", "Please confirm the applicant: " + username);
+                    sendEmailNotification(getEmailForRep(username), "Confirmation", "You have confirmed the applicant: " + username);
                 } else {
                     writer.println("Error: No matching applicant found to confirm.");
                 }
@@ -459,22 +467,6 @@ class ClientHandler extends Thread {
         System.out.println("Email notification sent successfully to " + recipientEmail);
     }
 
-    private void sendEmailNotificationToRepresentative(String username, String subject, String messageBody) {
-        // Retrieve representative's email from database or use a predefined list
-        String representativeEmail = getRepresentativeEmail(username);
-
-        if (representativeEmail != null && !representativeEmail.isEmpty()) {
-            try {
-                sendEmailNotification(representativeEmail, subject, messageBody);
-            } catch (MessagingException e) {
-                e.printStackTrace();
-                System.out.println("Error sending email to school representative: " + e.getMessage());
-            }
-        } else {
-            System.out.println("School representative email not found for username: " + username);
-        }
-    }
-
     private void removeFromApplicantsTable(String username) throws SQLException {
         String deleteFromApplicantsQuery = "DELETE FROM applicants WHERE username = ?";
         PreparedStatement deleteFromApplicantsStmt = connection.prepareStatement(deleteFromApplicantsQuery);
@@ -529,9 +521,10 @@ class ClientHandler extends Thread {
         
             int attemptNumber = attemptsCount + 1; // Calculate the attempt number for the current attempt
             // Arrays to store per question data
-            long[] questionTimes = new long[totalQuestions];
-            boolean[] questionCorrectness = new boolean[totalQuestions];
-            int[] questionScores = new int[totalQuestions];
+            // long[] questionTimes = new long[totalQuestions];
+            // boolean[] questionCorrectness = new boolean[totalQuestions];
+            // int[] questionScores = new int[totalQuestions];
+            List<String> reportLines = new ArrayList<>();
             int totalScore = 0;
         
             for (int i = 0; i < totalQuestions; i++) {
@@ -565,10 +558,15 @@ class ClientHandler extends Thread {
                     recordAttempt(participantId, challengeId, questionId, attemptNumber, isCorrect, marks, System.currentTimeMillis() - startTime);
     
                     // Store question data
-                    questionTimes[i] = System.currentTimeMillis() - startTime;
-                    questionCorrectness[i] = isCorrect;
-                    questionScores[i] = isCorrect ? marks : 0;
-                    totalScore += questionScores[i];
+                    String reportLine = "Question ID: " + questionId + "\n" +
+                                    "Your Answer: " + userAnswer + "\n" +
+                                    "Correct Answer: " + correctAnswer + "\n" +
+                                    "Correct: " + isCorrect + "\n" +
+                                    "Score: " + (isCorrect ? marks : 0) + "\n" +
+                                    "Time Taken: " + (System.currentTimeMillis() - startTime) + " ms\n";
+                    reportLines.add(reportLine);
+
+                    totalScore += (isCorrect ? marks : 0);
         
                     if (isCorrect) {
                         writer.println("Correct!");
@@ -588,16 +586,40 @@ class ClientHandler extends Thread {
             }
         
             // Provide challenge summary after all questions are attempted
-            writer.println("Challenge completed. Summary is here:");
-            generateChallengeSummary(writer, totalQuestions, questionTimes, questionCorrectness, questionScores, totalScore, System.currentTimeMillis() - startTime);
+            generatePdfReport(username, challengeId, reportLines);
+            writer.println("Challenge completed. Summary has been sent to your email: "+ getEmailForParticipant(username));
+            sendEmailWithAttachment(getEmailForParticipant(username), "Challenge Report", "Here is your challenge report.", "reports/" + username + "_challenge_" + challengeId + ".pdf");
             writer.flush();
         
-        } catch (SQLException e) {
+        } catch (SQLException | IOException | DocumentException | MessagingException e) {
             e.printStackTrace();
             writer.println("Error during challenge attempt: " + e.getMessage());
         }
     }
     
+    private void generatePdfReport(String username, int challengeId, List<String> reportLines) throws FileNotFoundException, DocumentException {
+        String filePath = "reports/Test9_challenge_" + challengeId + ".pdf";
+        File file = new File(filePath);
+        file.getParentFile().mkdirs(); // Create parent directories if needed
+
+            // Create the PDF document
+        Document document = new Document();
+        PdfWriter.getInstance(document, new FileOutputStream(filePath));
+
+        PdfWriter.getInstance(document, new FileOutputStream(filePath));
+        document.open();
+
+        document.add(new Paragraph("Challenge Report for " + username));
+        document.add(new Paragraph("Challenge ID: " + challengeId));
+        document.add(new Paragraph(" "));
+
+        for (String line : reportLines) {
+            document.add(new Paragraph(line));
+        }
+
+        document.close();
+    }
+
     private int getParticipantIdByUsername(String username) throws SQLException {
         String query = "SELECT id FROM participants WHERE username = ?";
         PreparedStatement statement = connection.prepareStatement(query);
@@ -606,7 +628,7 @@ class ClientHandler extends Thread {
         if (resultSet.next()) {
             return resultSet.getInt("id");
         }
-        return -1;  // Return -1 if username is not found
+        return -1; // Participant not found
     }
     
     private int countAttempts(int participantId, int challengeId) {
@@ -671,33 +693,89 @@ class ClientHandler extends Thread {
             e.printStackTrace();
         }
     }
-            
-    private static void generateChallengeSummary(PrintWriter writer, int totalQuestions, long[] questionTimes,boolean[] questionCorrectness, int[] questionScores, int totalScore,long totalTimeTaken) {
-        writer.println("Challenge Summary:");
-        writer.println("Total Questions: " + totalQuestions);
-        writer.println("Total Score: " + totalScore);
-        writer.println("Total Time Taken: " + (totalTimeTaken / 1000) + " seconds");
-            writer.println();
-
-        for (int i = 0; i < totalQuestions; i++) {
-            writer.println("Question " + (i + 1) + ":");
-            writer.println("   Time Taken: " + (questionTimes[i] / 1000) + " seconds");
-            writer.println("   Correct: " + (questionCorrectness[i] ? "Yes" : "No"));
-            writer.println("   Score: " + questionScores[i]);
-            writer.println();
-        }
-    }
-  
-    
+                
     private void logToTextFile(String data) throws IOException {
         try(BufferedWriter writer = new BufferedWriter(new FileWriter(txtFilePath,true))){
             writer.write(data + System.lineSeparator());
         }
     }
 
-    private String getRepresentativeEmail(String username) {
-        // Implement retrieving representative's email from database
-        // write query based on username
-        return "imwesigwa@fltug.com"; // Dummy implementation
+    private void registerSchool(String parts[],PrintWriter writer) {
+        String name = parts[1];
+        String district = parts[2];
+        String schoolRegNumber = parts[3];
+        String representativeEmail = parts[4];
+        String representativeName = parts[5];
+
+        try {
+            logToTextFile(String.join(" ", parts));
+
+            // Check if the school is in the schools table
+            String checkQuery = "SELECT * FROM schools WHERE school_registration_number = ?";
+            PreparedStatement checkStatement = connection.prepareStatement(checkQuery);
+            checkStatement.setString(1, schoolRegNumber);
+            ResultSet checkResult = checkStatement.executeQuery();
+            if (checkResult.next()) {
+                writer.println("School already exists");
+                return;
+            }
+
+            // Add the school to the schools table
+            String query = "INSERT INTO schools (name,district,school_registration_number,representative_email,representative_name) VALUES (?, ?, ?, ?, ?)";
+            PreparedStatement statement = connection.prepareStatement(query);
+            statement.setString(1, name);
+            statement.setString(2, district);
+            statement.setString(3, schoolRegNumber);
+            statement.setString(4, representativeEmail);
+            statement.setString(5, representativeName);
+
+            int rowsInserted = statement.executeUpdate();
+            if (rowsInserted > 0) {
+                writer.println("School registered successfully!");
+            }
+
+        } catch (SQLException | IOException e) {
+            e.printStackTrace();
+            writer.println("Error registering school: " + e.getMessage());
+        }
     }
+
+    private void sendEmailWithAttachment(String to, String subject, String body, String filePath) throws MessagingException, IOException {
+        Properties props = new Properties();
+        props.put("mail.smtp.host", "smtp.zoho.com");
+        props.put("mail.smtp.port", "587");
+        props.put("mail.smtp.auth", "true");
+        props.put("mail.smtp.starttls.enable", "true");
+    
+        Session session = Session.getInstance(props, new javax.mail.Authenticator() {
+            protected javax.mail.PasswordAuthentication getPasswordAuthentication() {
+                return new javax.mail.PasswordAuthentication("imwesigwa@fltug.com", "btzHkJwHSKPQ");
+            }
+        });
+    
+        Message message = new MimeMessage(session);
+        message.setFrom(new InternetAddress("imwesigwa@fltug.com"));
+        message.setRecipients(Message.RecipientType.TO, InternetAddress.parse(to));
+        message.setSubject(subject);
+    
+        MimeBodyPart messageBodyPart = new MimeBodyPart();
+        messageBodyPart.setText(body);
+    
+        Multipart multipart = new MimeMultipart();
+        multipart.addBodyPart(messageBodyPart);
+    
+        MimeBodyPart attachmentBodyPart = new MimeBodyPart();
+        try {
+            attachmentBodyPart.attachFile(filePath);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        multipart.addBodyPart(attachmentBodyPart);
+    
+        message.setContent(multipart);
+    
+        Transport.send(message);
+    }
+    
+
 }

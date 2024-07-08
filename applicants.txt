@@ -9,3 +9,8 @@ register Test4 test4 test4 939795 test4@gmail.com 2023-01-01 test4
 confirm yes Test2
 confirm yes Test3
 confirm yes Test4
+register Test6 test6 test6 921275 mwesigwajojo@gmail.com 2020-01-01 test6
+register Test7 test7 test7 921275 mwesigwajojo@gmail.com 2024-01-01 test7
+register Test8 test8 test8 921275 mwesigwajojo@gmail.com 2024-01-01 test8
+register Test9 test9 test9 921275 mwesigwajojo@gmail.com 2023-01-01 test9
+confirm yes Test9

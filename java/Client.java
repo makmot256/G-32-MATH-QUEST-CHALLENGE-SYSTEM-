@@ -29,7 +29,7 @@ public class Client {
 
                 switch (text) {
                     case "1":
-                        register(scanner, writer);
+                        registerApplicant(scanner, writer,reader);
                         break;
                     case "2":
                         loginParticipant(scanner, writer, reader);
@@ -83,7 +83,7 @@ public class Client {
         System.out.println("4. Logout");
     }
 
-    private static void register(Scanner scanner, PrintWriter writer) {
+    private static void registerApplicant(Scanner scanner, PrintWriter writer,BufferedReader reader) {
         System.out.print("Username: ");
         String username = scanner.nextLine();
         System.out.print("First Name: ");
@@ -96,12 +96,26 @@ public class Client {
         String email = scanner.nextLine();
         System.out.print("Date of Birth (YYYY-MM-DD): ");
         String dob = scanner.nextLine();
-        System.out.println("Set a password: ");
-        String password = scanner.nextLine();
+        String password = readPasswordSecurely();
 
         writer.println("register " + username + " " + firstName + " " + lastName + " " + schoolRegNumber + " " + email + " " + dob + " " + password);
-    }
 
+        try {
+            String response;
+            while ((response = reader.readLine()) != null && !response.isEmpty()) {
+                System.out.println(response);
+                if (response.contains("Applicant registered successfully!")) {
+                    displayParticipantMenu();
+                    handleParticipantOptions(scanner, writer, reader);
+                    return;
+                }
+            }
+        } catch (IOException e) {
+            System.out.println("Error during registration: " + e.getMessage());
+        }
+    }
+    
+    
     private static void loginParticipant(Scanner scanner, PrintWriter writer, BufferedReader reader) {
         try {
             System.out.print("Enter username: ");
@@ -148,7 +162,7 @@ public class Client {
 
             switch (text) {
                 case "1":
-                    viewChallenges(writer, reader);
+                    viewChallenges(scanner,writer, reader);
                     break;
                 case "2":
                     attemptChallenge(scanner, writer, reader);
@@ -212,13 +226,13 @@ public class Client {
 
             switch (text) {
                 case "1":
-                    viewApplicants(writer, reader);
+                    viewApplicants(scanner,writer, reader);
                     break;
                 case "2":
-                    confirmApplicant(scanner, writer);
+                    confirmApplicant(scanner, writer,reader);
                     break;
                 case "3":
-                    registerSchool(scanner, writer);
+                    registerSchool(scanner, writer,reader);
                     break;
                 case "4":
                     writer.println("logout");
@@ -241,12 +255,37 @@ public class Client {
         } while (!text.equals("4"));
     }
 
-    private static void registerSchool(Scanner scanner, PrintWriter writer) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'registerSchool'");
+    private static void registerSchool(Scanner scanner, PrintWriter writer,BufferedReader reader) {
+        System.out.print("School Name: ");
+        String name = scanner.nextLine();
+        System.out.print("District: ");
+        String district = scanner.nextLine();
+        System.out.print("School Registration Number: ");
+        String schoolRegNumber = scanner.nextLine();
+        System.out.print("Representative Email: ");
+        String representativeEmail = scanner.nextLine();
+        System.out.println("Representative Name: ");
+        String representativeName = scanner.nextLine();
+
+        writer.println("registerSchool " + name + " " + district + " " + schoolRegNumber + " " + representativeEmail + " " + representativeName);
+
+        try {
+            String response;
+            while ((response = reader.readLine()) != null && !response.isEmpty()) {
+                System.out.println(response);
+                if (response.contains("School registered successfully!")) {
+                    displaySchoolRepMenu();
+                    handleSchoolRepOptions(scanner, writer, reader);
+                    return;
+                }
+            }
+        } catch (Exception e) {
+            System.out.println("Error during registration: " + e.getMessage());
+        }
     }
 
-    private static void viewApplicants(PrintWriter writer, BufferedReader reader) {
+
+    private static void viewApplicants(Scanner scanner,PrintWriter writer, BufferedReader reader) {
         writer.println("viewApplicants");
         writer.flush();
 
@@ -255,12 +294,14 @@ public class Client {
             while ((response = reader.readLine()) != null && !response.isEmpty()) {
                 System.out.println(response);
             }
+            displaySchoolRepMenu();
+            handleSchoolRepOptions(scanner, writer, reader);
         } catch (IOException e) {
             System.out.println("Error reading response: " + e.getMessage());
         }
     }
 
-    private static void viewChallenges(PrintWriter writer, BufferedReader reader) {
+    private static void viewChallenges(Scanner scanner,PrintWriter writer, BufferedReader reader) {
         writer.println("viewChallenges");
         writer.flush();
 
@@ -268,13 +309,16 @@ public class Client {
             String response;
             while ((response = reader.readLine())!=null && !response.equals("END_OF_CHALLENGES")) {
                 System.out.println(response);
+                // return;
             }
+            displayParticipantMenu();
+            handleParticipantOptions(scanner, writer, reader);
         } catch (IOException e) {
             System.out.println("Error reading response: " + e.getMessage());
         }
     }
 
-    private static void confirmApplicant(Scanner scanner, PrintWriter writer) {
+    private static void confirmApplicant(Scanner scanner, PrintWriter writer, BufferedReader reader) {
         System.out.print("Username: ");
         String username = scanner.nextLine();
         System.out.print("Confirm (yes/no): ");
@@ -290,6 +334,20 @@ public class Client {
             writer.println("confirm no " + username + " " + reason);
         } else {
             System.out.println("Invalid confirmation command.");
+        }
+
+        try {
+            String response;
+            while ((response = reader.readLine()) != null && !response.isEmpty()) {
+                System.out.println(response);
+                if (response.contains("Participant confirmed successfully!")) {
+                    displaySchoolRepMenu();
+                    handleSchoolRepOptions(scanner, writer, reader);
+                    return;
+                }
+            }
+        } catch (IOException e) {
+            System.out.println("Error during confirmation: " + e.getMessage());
         }
     }
 
@@ -336,6 +394,8 @@ public class Client {
                 } else if (serverResponse.equals("Max Attempts Reached!")) {
                     System.out.println("You have already attempted this challenge three times. Maximum attempts reached.");
                     System.out.println("Returning to main menu...");
+                    displayParticipantMenu();
+                    handleParticipantOptions(scanner, writer, reader);
                     break;
                 } else if (serverResponse.equals("Invalid participant username.")) {
                     break;

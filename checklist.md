@@ -5,28 +5,27 @@
   - [X] Schools table
   - [X] Administrators table
   - [X] Questions table
-  - [ ] Answers table
   - [X] Challenges table
   - [X] Participants table
   - [X] RejectedParticipants table
   - [X] ParticipantAttempts table
 - [X] Configure server and database connections.
-- [ ] Create user roles (Administrator, School Representative, Participant).
+- [X] Create user roles (Administrator, School Representative, Participant).
 
 ## School Registration and Validation
 - [ ] Upload schools data.
   - [ ] Fields: Name, District, School Registration Number, Representative Name, Representative Email
 - [ ] Validate school representatives.
-  - [ ] Send email notifications for validation.
-  - [ ] Confirm validation in the database.
+  - [X] Send email notifications for validation.
+  - [X] Confirm validation in the database.
 
 ## Question and Answer Management
 - [ ] Develop functionality to upload questions and answers.
   - [ ] Import questions from questions.xlsx.
   - [ ] Import answers from answers.xlsx.
   - [ ] Verify the alignment of questions and answers.
-- [ ] Store questions and answers in the database.
-- [ ] Assign marks to each question.
+- [X] Store questions and answers in the database.
+- [X] Assign marks to each question.
 
 ## Challenge Management
 - [ ] Create functionality to define and open challenges.

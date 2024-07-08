@@ -1,4 +1,5 @@
 import java.io.*;
+import java.io.ObjectInputFilter.Config;
 import java.net.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -16,19 +17,29 @@ import com.itextpdf.text.Document;
 import com.itextpdf.text.DocumentException;
 import com.itextpdf.text.Paragraph;
 import com.itextpdf.text.pdf.PdfWriter;
-
+import io.github.cdimascio.dotenv.Dotenv;
 
 public class Server {
 
     private static final int PORT = 8001;
     private static Connection connection;
+    private static Dotenv dotenv = Dotenv.load();
+
+    public static String get(String key) {
+        return dotenv.get(key);
+    }
 
     public static void main(String[] args) throws ClassNotFoundException {
+        String dbHost = Server.get("DB_HOST");
+        String dbPort = Server.get("DB_PORT");
+        String dbName = Server.get("DB_NAME");
+        String dbUser = Server.get("DB_USER");
+        String dbPass = Server.get("DB_PASS");
         System.out.println("Server is starting...");
 
         try {
             Class.forName("com.mysql.cj.jdbc.Driver");
-            connection = DriverManager.getConnection("jdbc:mysql://localhost:3306/math_quest", "root", "root");
+            connection = DriverManager.getConnection("jdbc:mysql://"+dbHost+":"+dbPort+"/"+dbName, dbUser, dbPass);
             try (ServerSocket serverSocket = new ServerSocket(PORT)) {
                 System.out.println("Server is listening on port " + PORT);
                 while (true) {
@@ -50,11 +61,16 @@ class ClientHandler extends Thread {
     private final String txtFilePath = "applicants.txt"; 
     private Properties emailProperties;
 
+    private String emailHost = Server.get("EMAIL_HOST");
+    private String emailPort = Server.get("EMAIL_PORT");
+    private String emailUser = Server.get("EMAIL_USER");
+    private String emailPass = Server.get("EMAIL_PASS");
+
     public ClientHandler(Socket socket, Connection connection) {
         this.socket = socket;
         this.connection = connection;
         emailProperties = new Properties();
-        emailProperties.put("mail.smtp.host", "smtp.zoho.com");
+        emailProperties.put("mail.smtp.host", emailHost);
         emailProperties.put("mail.smtp.socketFactory.port", "465");
         emailProperties.put("mail.smtp.socketFactory.class", "javax.net.ssl.SSLSocketFactory");
         emailProperties.put("mail.smtp.auth", "true");
@@ -445,12 +461,12 @@ class ClientHandler extends Thread {
         Session session = Session.getInstance(emailProperties,
             new javax.mail.Authenticator() {
                 protected javax.mail.PasswordAuthentication getPasswordAuthentication() {
-                    return new javax.mail.PasswordAuthentication("imwesigwa@fltug.com", "btzHkJwHSKPQ");
+                    return new javax.mail.PasswordAuthentication(emailUser, emailPass);
                 }
             });
 
         Message message = new MimeMessage(session);
-        message.setFrom(new InternetAddress("imwesigwa@fltug.com"));
+        message.setFrom(new InternetAddress(emailUser));
         message.setRecipients(Message.RecipientType.TO, InternetAddress.parse(recipientEmail));
         message.setSubject(subject);
         message.setText(messageBody);
@@ -742,12 +758,12 @@ class ClientHandler extends Thread {
     
         Session session = Session.getInstance(props, new javax.mail.Authenticator() {
             protected javax.mail.PasswordAuthentication getPasswordAuthentication() {
-                return new javax.mail.PasswordAuthentication("imwesigwa@fltug.com", "btzHkJwHSKPQ");
+                return new javax.mail.PasswordAuthentication(emailUser, emailPass);
             }
         });
     
         Message message = new MimeMessage(session);
-        message.setFrom(new InternetAddress("imwesigwa@fltug.com"));
+        message.setFrom(new InternetAddress(emailUser));
         message.setRecipients(Message.RecipientType.TO, InternetAddress.parse(to));
         message.setSubject(subject);
     

@@ -2,15 +2,16 @@
         <x-navbars.sidebar activePage="tables"></x-navbars.sidebar>
         <main class="main-content position-relative max-height-vh-100 h-100 border-radius-lg ">
             <!-- Navbar -->
-            <x-navbars.navs.auth titlePage="Tables"></x-navbars.navs.auth>
+            <x-navbars.navs.auth titlePage="Schools Upload"></x-navbars.navs.auth>
+            <h2>Upload the schools here</h2>
             <!-- End Navbar -->
-            <div class="container-fluid py-4">
+               <!--div class="container-fluid py-4">
                 <div class="row">
-                    <div class="col-12">
+                     <div class="col-12">
                         <div class="card my-4">
                             <div class="card-header p-0 position-relative mt-n4 mx-3 z-index-2">
-                                <div class="bg-gradient-primary shadow-primary border-radius-lg pt-4 pb-3">
-                                    <h6 class="text-white text-capitalize ps-3">Authors table</h6>
+                               <div class="bg-gradient-primary shadow-primary border-radius-lg pt-4 pb-3">   
+                                <h6 class="text-white text-capitalize ps-3">Schools Uploaded</h6>
                                 </div>
                             </div>
                             <div class="card-body px-0 pb-2">
@@ -20,16 +21,20 @@
                                             <tr>
                                                 <th
                                                     class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">
-                                                    Author</th>
+                                                    Name</th>
                                                 <th
                                                     class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">
-                                                    Function</th>
+                                                    District</th>
                                                 <th
                                                     class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">
-                                                    Status</th>
+                                                    School Registration Number</th>
                                                 <th
                                                     class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">
-                                                    Employed</th>
+                                                    Representative Email</th>
+                                            
+                                                <th
+                                                    class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">
+                                                    Representative Name</th>
                                                 <th class="text-secondary opacity-7"></th>
                                             </tr>
                                         </thead>
@@ -518,3 +523,4 @@
         <x-plugins></x-plugins>
 
 </x-layout>
+       

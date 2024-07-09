@@ -55,7 +55,7 @@
                                     <p class="mt-4 text-sm text-center">
                                         Don't have an account?
                                         <a href="{{ route('register') }}"
-                                            class="text-primary text-gradient font-weight-bold">Sign up</a>
+                                            class="text-primary text-gradient font-weight-bold">Register</a>
                                     </p>
                                 </form>
                             </div>

@@ -7,7 +7,7 @@
         </div>
     </div>
     <div class="page-header justify-content-center min-vh-100"
-        style="background-image: url('myMaths.jpg');">
+        style="background-image: url('myImage.jpg');">
         <span class="mask bg-gradient-dark opacity-6"></span>
         <div class="container">
             <h1 class="text-light text-center">Welcome to the Math Quest Challenge System.</h1>

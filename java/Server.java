@@ -1,5 +1,4 @@
 import java.io.*;
-import java.io.ObjectInputFilter.Config;
 import java.net.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -28,7 +27,13 @@ public class Server {
     public static String get(String key) {
         return dotenv.get(key);
     }
-
+    
+    /**
+     * The main method that starts the server and handles client connections.
+     *
+     * @param  args    the command-line arguments passed to the program
+     * @throws ClassNotFoundException if the JDBC driver class is not found
+     */
     public static void main(String[] args) throws ClassNotFoundException {
         String dbHost = Server.get("DB_HOST");
         String dbPort = Server.get("DB_PORT");
@@ -62,7 +67,6 @@ class ClientHandler extends Thread {
     private Properties emailProperties;
 
     private String emailHost = Server.get("EMAIL_HOST");
-    private String emailPort = Server.get("EMAIL_PORT");
     private String emailUser = Server.get("EMAIL_USER");
     private String emailPass = Server.get("EMAIL_PASS");
 
@@ -77,6 +81,10 @@ class ClientHandler extends Thread {
         emailProperties.put("mail.smtp.port", "465");
     }
 
+    /**
+     * A method that runs the server operations, handling incoming requests.
+     *
+     */
     public void run() {
         try {
             InputStream input = socket.getInputStream();
@@ -98,6 +106,13 @@ class ClientHandler extends Thread {
         }
     }
 
+    /**
+     * Handles different types of requests based on the command provided.
+     *
+     * @param  request  the request input
+     * @param  writer   the PrintWriter for writing responses
+     * @param  reader   the BufferedReader for reading input
+     */
     private void handleRequest(String request, PrintWriter writer,BufferedReader reader){
         String[] parts = request.split(" ");
         String command = parts[0];
@@ -134,7 +149,13 @@ class ClientHandler extends Thread {
         }
     }
 
-    
+    /**
+     * Registers an applicant in the system.
+     *
+     * @param  parts   an array of strings containing the applicant's information
+     * @param  writer  a PrintWriter object for writing the response
+     * @return          void
+     */
     private void registerApplicant(String[] parts, PrintWriter writer) {
         String username = parts[1];
         String firstName = parts[2];
@@ -188,6 +209,13 @@ class ClientHandler extends Thread {
         }
     }
 
+    /**
+     * Retrieves the representative email associated with a school registration number.
+     *
+     * @param  schoolRegNumber   the registration number of the school
+     * @return                   the representative email associated with the school
+     * @throws SQLException     if an error occurs while executing the SQL query
+     */
     private String getRepresentativeEmailBySchoolRegNumber(String schoolRegNumber) throws SQLException {
         String query = "SELECT representative_email FROM schools WHERE school_registration_number = ?";
         PreparedStatement stmt = connection.prepareStatement(query);
@@ -200,8 +228,12 @@ class ClientHandler extends Thread {
         }
     }
     
-
-    // view applicants for school representative so login school rep then show the menu including view applicants
+    /**
+     * Retrieves the details of all applicants from the database and prints them to the provided PrintWriter.
+     *
+     * @param  writer    the PrintWriter object to write the applicant details to
+     * @throws SQLException if an error occurs while executing the SQL query
+     */
     private void viewApplicants(PrintWriter writer)
     {
         try{
@@ -236,8 +268,13 @@ class ClientHandler extends Thread {
             writer.flush();
         }
     }
-    // add the confirm participant solely for school representative
-    // function to shuffle questions/pick randomly from db
+    
+    /**
+     * Retrieves a shuffled list of question IDs associated with the given challenge ID from the database.
+     *
+     * @param  challengeId  the ID of the challenge
+     * @return              a list of shuffled question IDs
+     */
     private List<Integer> shuffleQuestions(int challengeId){
         List<Integer> questionIds = new ArrayList<>();
         try {
@@ -257,16 +294,17 @@ class ClientHandler extends Thread {
 
         return questionIds;
     }
-    // handling email(smtp)
-    // login for both participant and school representative
+    
+    /**
+     * A method to log in a participant using the provided Scanner and PrintWriter objects.
+     *
+     * @param  scanner  the Scanner object used to read input
+     * @param  writer   the PrintWriter object used to write output
+     * @return          true if the login is successful, false otherwise
+     */
     private boolean loginParticipant(Scanner scanner,PrintWriter writer) {
         try {
-            // writer.print("Enter username: ");
-            // writer.flush();
             String username = scanner.nextLine();
-
-            // writer.print("Enter password: ");
-            // writer.flush();
             String password = scanner.nextLine().trim();
 
             String query = "SELECT * FROM participants WHERE username = ? AND password = ?";
@@ -291,13 +329,15 @@ class ClientHandler extends Thread {
         }
     }
 
+    /**
+     * Logs in a school representative using the provided Scanner and PrintWriter objects.
+     *
+     * @param  scanner  the Scanner object used to read input
+     * @param  writer   the PrintWriter object used to write output
+     * @return          true if the login is successful, false otherwise
+     */
     private boolean loginSchoolRepresentative(Scanner scanner, PrintWriter writer) {
-        // writer.print("Enter username: ");
-        // writer.flush();
         String username = scanner.nextLine();
-
-        // writer.print("Enter password: ");
-        // writer.flush();
         String password = scanner.nextLine().trim();
 
         try {
@@ -323,8 +363,11 @@ class ClientHandler extends Thread {
         }
     }
   
-    // log the participant and their school since their school exists 
-    // send an email immediately to the school representative
+    /**
+     * Method to view challenges and display challenge details.
+     *
+     * @param  writer   PrintWriter to write challenge details
+     */
     private void viewChallenges(PrintWriter writer) {
         try {
             String query = "SELECT c.id, c.name, c.start_date, c.end_date, c.duration, c.description, COUNT(q.id) AS num_questions " +
@@ -353,13 +396,10 @@ class ClientHandler extends Thread {
                 writer.println("Duration: " + duration + " minutes");
                 writer.println("Number of Questions: " + numQuestions);
                 writer.println();
-            }
-    
+            }    
             // Indicate the end of challenges listing
             writer.println("END_OF_CHALLENGES");
-            writer.flush();
-
-    
+            writer.flush();    
         } catch (SQLException e) {
             e.printStackTrace();
             writer.println("Error viewing challenges: " + e.getMessage());
@@ -367,6 +407,12 @@ class ClientHandler extends Thread {
         }
     }
     
+    /**
+     * Confirm or reject an applicant and sending an email immediately.
+     *
+     * @param  parts   array containing username, and reason
+     * @param  writer  PrintWriter object to write confirmation/rejection messages
+     */
     private void confirmApplicant(String[] parts, PrintWriter writer) {
         String confirm = parts[1];
         String username = parts[2];
@@ -374,8 +420,7 @@ class ClientHandler extends Thread {
     
         try {
             if (confirm.equalsIgnoreCase("yes")) {
-                logToTextFile("confirm yes " + username);
-    
+                logToTextFile("confirm yes " + username);    
                 // Move applicant to participants table
                 String moveToParticipantsQuery = "INSERT INTO participants (username,firstname,lastname,school_registration_number,email,date_of_birth,password) SELECT username, firstname, lastname, school_registration_number, email, date_of_birth,password FROM applicants WHERE username = ?";
                 PreparedStatement moveToParticipantsStmt = connection.prepareStatement(moveToParticipantsQuery);
@@ -383,23 +428,18 @@ class ClientHandler extends Thread {
     
                 int rowsInserted = moveToParticipantsStmt.executeUpdate();
                 if (rowsInserted > 0) {
-                    writer.println("Participant confirmed successfully!");
-    
+                    writer.println("Participant confirmed successfully!");    
                     // Remove from applicants table
-                    removeFromApplicantsTable(username);
-    
+                    removeFromApplicantsTable(username);    
                     // Remove from file
                     removeFromFile(username);
-
                     // Send email notification to participant
                     sendEmailNotification(getEmailForParticipant(username), "Confirmation", "You have been confirmed as a participant.");
-
                     // Send email notification to school representative
                     sendEmailNotification(getEmailForRep(username), "Confirmation", "You have confirmed the applicant: " + username);
                 } else {
                     writer.println("Error: No matching applicant found to confirm.");
-                }
-    
+                }    
             } else if (confirm.equalsIgnoreCase("no")) {
                 logToTextFile("confirm no " + username + " " + reason);
     
@@ -411,30 +451,31 @@ class ClientHandler extends Thread {
     
                 int rowsInserted = moveToRejectedStmt.executeUpdate();
                 if (rowsInserted > 0) {
-                    writer.println("Participant rejected successfully with reason: " + reason);
-    
+                    writer.println("Participant rejected successfully with reason: " + reason);    
                     // Remove from applicants table
-                    removeFromApplicantsTable(username);
-    
+                    removeFromApplicantsTable(username);    
                     // Remove from file
                     removeFromFile(username);
-
                     sendEmailNotification(username, "Rejection", "Your application has been rejected. Reason: " + reason);
                 } else {
                     writer.println("Error: No matching applicant found to reject.");
-                }
-    
+                }    
             } else {
                 writer.println("Invalid confirmation command.");
-            }
-    
+            }    
         } catch (SQLException | IOException | MessagingException e) {
             e.printStackTrace();
             writer.println("Error confirming participant: " + e.getMessage());
         }
     }
     
-
+    /**
+     * Retrieves the email associated with the representative username from the school_representatives table.
+     *
+     * @param  username   the username of the representative
+     * @return            the email address associated with the representative
+     * @throws SQLException if an error occurs while executing the SQL query
+     */
     private String getEmailForRep(String username) throws SQLException{
         String query = "SELECT email FROM school_representatives WHERE username = ?";
         PreparedStatement statement = connection.prepareStatement(query);
@@ -446,6 +487,12 @@ class ClientHandler extends Thread {
         return "not found";
     }
 
+    /**
+     * Retrieves the email associated with the participant username from the participants table.
+     *
+     * @param  username   the username of the participant
+     * @return            the email address associated with the participant, or "not found" if not found
+     */
     private String getEmailForParticipant(String username) throws SQLException{
         String query = "SELECT email FROM participants WHERE username = ?";
         PreparedStatement statement = connection.prepareStatement(query);
@@ -457,6 +504,13 @@ class ClientHandler extends Thread {
         return "not found";
     }
 
+    /**
+     * Sends an email notification to a recipient with the provided details.
+     *
+     * @param  recipientEmail   the email address of the recipient
+     * @param  subject          the subject of the email
+     * @param  messageBody      the body of the email message
+     */
     private void sendEmailNotification(String recipientEmail, String subject, String messageBody) throws MessagingException {
         Session session = Session.getInstance(emailProperties,
             new javax.mail.Authenticator() {
@@ -475,13 +529,25 @@ class ClientHandler extends Thread {
         System.out.println("Email notification sent successfully to " + recipientEmail);
     }
 
+        /**
+     * Removes an applicant from the applicants table in the database.
+     *
+     * @param  username   the username of the applicant to be removed
+     * @throws SQLException  if a database access error occurs or other errors
+     */
     private void removeFromApplicantsTable(String username) throws SQLException {
         String deleteFromApplicantsQuery = "DELETE FROM applicants WHERE username = ?";
         PreparedStatement deleteFromApplicantsStmt = connection.prepareStatement(deleteFromApplicantsQuery);
         deleteFromApplicantsStmt.setString(1, username);
         deleteFromApplicantsStmt.executeUpdate();
     }
-    
+
+    /**
+     * Removes the specified username from the 'applicants.txt' file.
+     *
+     * @param  username   the username to be removed
+     * @throws IOException  if an I/O error occurs
+     */
     private void removeFromFile(String username) throws IOException {
         Path path = Paths.get("applicants.txt");
         List<String> lines = Files.readAllLines(path);
@@ -489,23 +555,29 @@ class ClientHandler extends Thread {
         Files.write(path, lines);
     }
     
-    // TODO: participant can do as many as possible but cannot do more than one at a time.
-    // TODO: add check to see if challenge is valid
-    // TODO: add check to see if user is eligible to participate
-
+    /**
+     * Attempts a challenge for a participant.
+     *
+     * @param scanner         the scanner to read user input
+     * @param writer          the writer to write output to the user
+     * @param username        the username of the participant
+     * @param challengeId     the ID of the challenge
+     * @throws SQLException   if there is an error with the database
+     * @throws IOException     if there is an error with the file system
+     * @throws DocumentException if there is an error with the PDF report
+     * @throws MessagingException if there is an error with the email
+     */
     private void attemptChallenge(Scanner scanner, PrintWriter writer, String username, int challengeId) {
         try {
             // Fetch participant ID from database based on username
-            int participantId = getParticipantIdByUsername(username); // Implement this method to retrieve participant ID
-        
+            int participantId = getParticipantIdByUsername(username);         
             // Ensure participant ID is valid
             if (participantId == -1) {
                 writer.println("Invalid participant username.");
                 return;
-            }
-        
+            }        
             // Fetch challenge duration from the database
-            int challengeDuration = getChallengeDuration(challengeId); // Implement this method to fetch duration
+            int challengeDuration = getChallengeDuration(challengeId);
         
             // Fetch all question IDs for the challenge
             List<Integer> questionIds = shuffleQuestions(challengeId);
@@ -513,10 +585,9 @@ class ClientHandler extends Thread {
             int remainingQuestions = totalQuestions;
         
             // Count existing attempts for this participant and challenge
-            int attemptsCount = countAttempts(participantId, challengeId); // Implement this method to count attempts
+            int attemptsCount = countAttempts(participantId, challengeId); 
         
             // Check if participant has exceeded maximum attempts
-            // user needs to return to menu automatically
             if (attemptsCount >= 3) {
                 writer.println("Max Attempts Reached!");
                 writer.flush();
@@ -525,16 +596,15 @@ class ClientHandler extends Thread {
         
             // Timer variables
             long startTime = System.currentTimeMillis();
-            long endTime = startTime + (challengeDuration * 60 * 1000); // Convert duration to milliseconds
+            long endTime = startTime + (challengeDuration * 60 * 1000); //milliseconds
         
-            int attemptNumber = attemptsCount + 1; // Calculate the attempt number for the current attempt
+            int attemptNumber = attemptsCount + 1;
             // Array to store per question data
             List<String> reportLines = new ArrayList<>();
             int totalScore = 0;
         
             for (int i = 0; i < totalQuestions; i++) {
-                int questionId = questionIds.get(i);
-        
+                int questionId = questionIds.get(i);        
                 // Fetch question details using questionId
                 String query = "SELECT question_text, answer, marks FROM questions WHERE id = ?";
                 PreparedStatement statement = connection.prepareStatement(query);
@@ -605,13 +675,22 @@ class ClientHandler extends Thread {
             writer.println("Error during challenge attempt: " + e.getMessage());
         }
     }
-    
+
+    /**
+     * Generates a PDF report for a given user and challenge.
+     *
+     * @param  username    the username of the user
+     * @param  challengeId the ID of the challenge
+     * @param  reportLines  the lines of the report
+     * @throws FileNotFoundException if the file cannot be found
+     * @throws DocumentException     if there is an error with the PDF document
+     */
     private void generatePdfReport(String username, int challengeId, List<String> reportLines) throws FileNotFoundException, DocumentException {
-        String filePath = "reports/Test9_challenge_" + challengeId + ".pdf";
+        String filePath = "reports/" + username + "_challenge_" + challengeId + ".pdf";
         File file = new File(filePath);
         file.getParentFile().mkdirs(); // Create parent directories if needed
 
-            // Create the PDF document
+        // Create the PDF document
         Document document = new Document();
         PdfWriter.getInstance(document, new FileOutputStream(filePath));
 
@@ -629,6 +708,13 @@ class ClientHandler extends Thread {
         document.close();
     }
 
+    /**
+     * Retrieves the participant ID from the database based on the provided username.
+     *
+     * @param  username  the username of the participant
+     * @return           the participant ID if found, -1 otherwise
+     * @throws SQLException if there is an error with the database
+     */
     private int getParticipantIdByUsername(String username) throws SQLException {
         String query = "SELECT id FROM participants WHERE username = ?";
         PreparedStatement statement = connection.prepareStatement(query);
@@ -640,6 +726,13 @@ class ClientHandler extends Thread {
         return -1; // Participant not found
     }
     
+    /**
+     * Counts the number of attempts made by a participant for a specific challenge.
+     *
+     * @param  participantId  the ID of the participant
+     * @param  challengeId    the ID of the challenge
+     * @return                the number of attempts made by the participant for the challenge
+     */
     private int countAttempts(int participantId, int challengeId) {
         int attemptCount = 0;
         try {
@@ -658,6 +751,13 @@ class ClientHandler extends Thread {
         return attemptCount;
     }
     
+    /**
+     * Displays the remaining time in seconds based on the start and end time.
+     *
+     * @param  startTime    the start time in milliseconds
+     * @param  endTime      the end time in milliseconds
+     * @param  writer       the PrintWriter to write the remaining time
+     */
     private void displayRemainingTime(long startTime, long endTime, PrintWriter writer) {
         long currentTime = System.currentTimeMillis();
         long remainingTimeMillis = endTime - currentTime;
@@ -670,6 +770,13 @@ class ClientHandler extends Thread {
         }
     }
 
+    /**
+     * Retrieves the duration of a challenge from the database based on its ID.
+     *
+     * @param  challengeId  the ID of the challenge
+     * @return              the duration of the challenge in minutes, or 0 if not found
+     * @throws SQLException if there is an error executing the SQL query
+     */
     private int getChallengeDuration(int challengeId) throws SQLException {
         int duration = 0;
         String query = "SELECT duration FROM challenges WHERE id = ?";
@@ -685,7 +792,18 @@ class ClientHandler extends Thread {
         
         return duration;
     }
-        
+
+    /**
+     * Inserts a new attempt record into the participant_attempts table.
+     *
+     * @param  participantId   the ID of the participant
+     * @param  challengeId     the ID of the challenge
+     * @param  questionId      the ID of the question
+     * @param  attemptNumber   the attempt number
+     * @param  isCorrect       whether the attempt was correct or not
+     * @param  score           the score achieved in the attempt
+     * @param  timeTaken       the time taken for the attempt in milliseconds
+     */
     private void recordAttempt(int participantId, int challengeId, int questionId, int attemptNumber, boolean isCorrect, int score, long timeTaken) {
         String query = "INSERT INTO participant_attempts (participant_id, challenge_id, question_id, attempt_number, is_correct, score, time_taken) " +
                        "VALUES (?, ?, ?, ?, ?, ?, ?)";
@@ -702,13 +820,25 @@ class ClientHandler extends Thread {
             e.printStackTrace();
         }
     }
-                
+    
+    /**
+     * Logs the app data to a text file.
+     *
+     * @param  data   the data to be logged
+     * @throws IOException  if an I/O error occurs while writing to the file
+     */
     private void logToTextFile(String data) throws IOException {
         try(BufferedWriter writer = new BufferedWriter(new FileWriter(txtFilePath,true))){
             writer.write(data + System.lineSeparator());
         }
     }
 
+    /**
+     * Registers a school in the system.
+     *
+     * @param  parts   an array of strings containing the school's information
+     * @param  writer  a PrintWriter object for writing the response
+     */
     private void registerSchool(String parts[],PrintWriter writer) {
         String name = parts[1];
         String district = parts[2];
@@ -749,6 +879,16 @@ class ClientHandler extends Thread {
         }
     }
 
+    /**
+     * Sends an email with an attachment(pdf) to the specified recipient.
+     *
+     * @param  to                  the email address of the recipient
+     * @param  subject             the subject of the email
+     * @param  body                the body of the email message
+     * @param  filePath            the path to the file to be attached
+     * @throws MessagingException   if there is an error sending the email
+     * @throws IOException          if there is an error attaching the file
+     */
     private void sendEmailWithAttachment(String to, String subject, String body, String filePath) throws MessagingException, IOException {
         Properties props = new Properties();
         props.put("mail.smtp.host", "smtp.zoho.com");
@@ -784,7 +924,5 @@ class ClientHandler extends Thread {
         message.setContent(multipart);
     
         Transport.send(message);
-    }
-    
-
+    }   
 }

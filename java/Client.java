@@ -3,10 +3,15 @@ import java.net.*;
 import java.util.Scanner;
 
 public class Client {
-
     private static final String HOST = "localhost";
     private static final int PORT = 8001;
 
+    /**
+     * A method to handle the main logic of the client program.
+     *
+     * @param  args    the command-line arguments passed to the program
+     * @return         void
+     */
     public static void main(String[] args) {
         try (Socket socket = new Socket(HOST, PORT)) {
 
@@ -26,6 +31,11 @@ public class Client {
         }
     }
 
+    /**
+     * A method to display the main menu options.
+     * 
+     * @return          void
+     */
     private static void displayMainMenu() {
         System.out.println("Main Menu:");
         System.out.println("1. Register");
@@ -34,6 +44,11 @@ public class Client {
         System.out.println("4. Exit");
     }
 
+    /**
+     * Displays the participant menu options.
+     *
+     * @return          void
+     */
     private static void displayParticipantMenu() {
         System.out.println("Participant Menu:");
         System.out.println("1. View Challenges");
@@ -41,6 +56,11 @@ public class Client {
         System.out.println("3. Logout");
     }
 
+    /**
+     * A method to display the school representative menu options.
+     *
+     * @return          void
+     */
     private static void displaySchoolRepMenu() {
         System.out.println("School Representative Menu:");
         System.out.println("1. View Applicants");
@@ -49,6 +69,14 @@ public class Client {
         System.out.println("4. Logout");
     }
 
+    /**
+     * Registers an applicant by prompting the user for their information and sending it to the server.
+     *
+     * @param  scanner         the scanner object for user input
+     * @param  writer          the print writer object for sending messages to the server
+     * @param  reader          the buffered reader object for receiving messages from the server
+     * @return                 void
+     */
     private static void registerApplicant(Scanner scanner, PrintWriter writer,BufferedReader reader) {
         System.out.print("Username: ");
         String username = scanner.nextLine();
@@ -81,7 +109,15 @@ public class Client {
         }
     }
     
-    
+    /**
+     * Logs in a participant by prompting the user for their username and password,
+     * sending the login command to the server, and handling the response.
+     *
+     * @param  scanner   the scanner object for user input
+     * @param  writer    the print writer object for sending messages to the server
+     * @param  reader    the buffered reader object for receiving messages from the server
+     * @return           void
+     */
     private static void loginParticipant(Scanner scanner, PrintWriter writer, BufferedReader reader) {
         try {
             System.out.print("Enter username: ");
@@ -110,6 +146,11 @@ public class Client {
         }
     }
 
+    /**
+     * A method to securely read a password from the console.
+     *
+     * @return         	the password entered by the user
+     */
     private static String readPasswordSecurely() {
         Console console = System.console();
         if (console == null) {
@@ -118,11 +159,19 @@ public class Client {
         char[] passwordArray = console.readPassword("Enter password: ");
         return new String(passwordArray);
     }
-    
+
+    /**
+     * Handles the participant options based on the user's input. Displays the participant menu and allows the user to choose
+     * between viewing challenges, attempting challenges, or going back to the main menu. Reads and displays server responses
+     * for options other than going back to the main menu.
+     *
+     * @param  scanner   the scanner object for reading user input
+     * @param  writer    the print writer object for sending commands to the server
+     * @param  reader    the buffered reader object for reading server responses
+     */
     private static void handleParticipantOptions(Scanner scanner, PrintWriter writer, BufferedReader reader) {
         String text;
         do {
-            // displayParticipantMenu();
             System.out.print("Choose an option: ");
             text = scanner.nextLine();
 
@@ -145,7 +194,6 @@ public class Client {
                     System.out.println("Invalid option");
                     break;
             }
-
             // Read and display server responses
             if (!text.equals("3")) {
                 String response;
@@ -159,16 +207,14 @@ public class Client {
                     System.out.println("Error reading response: " + e.getMessage());
                 }
             }
-
-        } while (!text.equals("3"));
+        } while (!text.equals("3")); // Exit when user chooses to go back to the main menu
     }
 
     private static void loginSchoolRepresentative(Scanner scanner, PrintWriter writer, BufferedReader reader) {
         try {
             System.out.print("Enter username: ");
             String username = scanner.nextLine();
-            String password = readPasswordSecurely();
-    
+            String password = readPasswordSecurely();    
             // Send login command to server
             writer.println("login school_representative");
             writer.flush();
@@ -176,13 +222,11 @@ public class Client {
             writer.flush();
             writer.println(password);
             writer.flush();
-
             // Read response from server
             String response = reader.readLine();
             System.out.println(response);
     
             if (response.equals("Login successful!")) {
-                // Display participant menu
                 displaySchoolRepMenu();
                 handleSchoolRepOptions(scanner, writer, reader);
             }
@@ -191,6 +235,13 @@ public class Client {
         }
     }
 
+    /**
+     * Handles the options for a school representative. Allows them to view applicants, confirm applicants, register a school, or go back to the main menu.
+     *
+     * @param  scanner   the scanner object for reading user input
+     * @param  writer    the print writer object for sending commands to the server
+     * @param  reader    the buffered reader object for reading server responses
+     */
     private static void handleSchoolRepOptions(Scanner scanner, PrintWriter writer, BufferedReader reader) {
         String text;
         do {
@@ -230,6 +281,14 @@ public class Client {
         } while (!text.equals("4"));
     }
 
+    /**
+     * Registers a school by prompting the user for their information and sending it to the server.
+     *
+     * @param  scanner         the scanner object for user input
+     * @param  writer          the print writer object for sending messages to the server
+     * @param  reader          the buffered reader object for receiving messages from the server
+     * @return                 void
+     */
     private static void registerSchool(Scanner scanner, PrintWriter writer,BufferedReader reader) {
         System.out.print("School Name: ");
         String name = scanner.nextLine();
@@ -259,7 +318,14 @@ public class Client {
         }
     }
 
-
+    /**
+     * Views the list of applicants by sending a request to the server and displaying the responses.
+     *
+     * @param  scanner         the scanner object for user input
+     * @param  writer          the print writer object for sending messages to the server
+     * @param  reader          the buffered reader object for receiving messages from the server
+     * @throws IOException     if there is an error reading the server response
+     */
     private static void viewApplicants(Scanner scanner,PrintWriter writer, BufferedReader reader) {
         writer.println("viewApplicants");
         writer.flush();
@@ -275,7 +341,15 @@ public class Client {
             System.out.println("Error reading response: " + e.getMessage());
         }
     }
-
+    
+    /**
+     * Views the list of challenges by sending a request to the server and displaying the responses.
+     *
+     * @param  scanner         the scanner object for user input
+     * @param  writer          the print writer object for sending messages to the server
+     * @param  reader          the buffered reader object for receiving messages from the server
+     * @throws IOException     if there is an error reading the server response
+     */
     private static void viewChallenges(Scanner scanner,PrintWriter writer, BufferedReader reader) {
         writer.println("viewChallenges");
         writer.flush();
@@ -293,6 +367,14 @@ public class Client {
         }
     }
 
+    /**
+     * Confirms or rejects an applicant based on user input and server responses.
+     *
+     * @param  scanner   the scanner object for reading user input
+     * @param  writer    the print writer object for sending commands to the server
+     * @param  reader    the buffered reader object for reading server responses
+     * @throws IOException     if there is an error reading the server response
+     */
     private static void confirmApplicant(Scanner scanner, PrintWriter writer, BufferedReader reader) {
         System.out.print("Username: ");
         String username = scanner.nextLine();
@@ -326,6 +408,14 @@ public class Client {
         }
     }
 
+     /**
+     * Enables a participant to attempt a challenge.
+     *
+     * @param  scanner   the scanner object for reading user input
+     * @param  writer    the print writer object for sending commands to the server
+     * @param  reader    the buffered reader object for reading server responses
+     * @throws IOException     if there is an error reading the server response
+     */   
     private static void attemptChallenge(Scanner scanner, PrintWriter writer, BufferedReader reader) {
         try {
             // Ask for participant username
@@ -344,14 +434,10 @@ public class Client {
                 System.out.println(serverResponse);// Read server's response for question text
                 if (serverResponse.startsWith("Question: ")) {
                     // Display question text
-                    // String questionText = serverResponse.substring("Question: ".length()).trim();
-                    // System.out.println("Question: " + questionText);
                     System.out.println(serverResponse);
-
                     // Ask for participant's answer
                     System.out.print("Your answer: ");
                     String answer = scanner.nextLine();
-
                     // Send answer to the server
                     writer.println(answer);
                 } else if (serverResponse.equals("Max Attempts Reached!")) {
@@ -373,13 +459,19 @@ public class Client {
         }
     }
 
+    /**
+     * Handles the main menu options based on the user's input. Allows the user to register as an applicant, login as a participant, login as a school representative, or exit the program. Reads and displays server responses for each option.
+     *
+     * @param  scanner   the scanner object for reading user input
+     * @param  writer    the print writer object for sending commands to the server
+     * @param  reader    the buffered reader object for reading server responses
+     * @throws IOException     if there is an error reading the server response
+     */
     private static void handleMainMenuOptions(Scanner scanner, PrintWriter writer, BufferedReader reader) throws IOException {
         String text;
 
             do {
-                // Display main menu
                 displayMainMenu();
-
                 // Get user input
                 System.out.print("Choose an option: ");
                 text = scanner.nextLine();

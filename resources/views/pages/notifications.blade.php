@@ -11,8 +11,8 @@
                         <div class="card-header p-3">
                             <h5 class="mb-0">Notifications</h5>
                             <p class="text-sm mb-0">
-                                Notifications on this page use Toasts from Bootstrap. Read more details <a
-                                    href="https://getbootstrap.com/docs/5.0/components/toasts/" target="_blank">here</a>.
+                                <a
+                                    href="https://getbootstrap.com/docs/5.0/components/toasts/" target="_blank"></a>.
                             </p>
                         </div>
                         <div class="card-body p-3">
@@ -119,7 +119,7 @@
                     </div>
                 </div>
             </div>
-            <x-footers.auth></x-footers.auth>
+           
         </div>
     </main>
     <x-plugins></x-plugins>
@@ -172,4 +172,20 @@
             }, 17000); // Show after 17 seconds
         });
     </script>
+
+<style>
+        .toast-container {
+            position: fixed;
+            bottom: 0;
+            right: 0;
+            left: 0;
+            margin: auto;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            max-width: 90%; /* Adjust max-width as needed */
+        }
+    </style>
+
 </x-layout>

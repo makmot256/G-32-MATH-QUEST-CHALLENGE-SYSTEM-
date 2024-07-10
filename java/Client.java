@@ -91,8 +91,10 @@ public class Client {
         System.out.print("Date of Birth (YYYY-MM-DD): ");
         String dob = scanner.nextLine();
         String password = readPasswordSecurely();
+        System.out.print("Add image path: ");
+        String imagePath = scanner.nextLine();
 
-        writer.println("register " + username + " " + firstName + " " + lastName + " " + schoolRegNumber + " " + email + " " + dob + " " + password);
+        writer.println("register " + username + " " + firstName + " " + lastName + " " + schoolRegNumber + " " + email + " " + dob + " " + password+ " " + imagePath);  
 
         try {
             String response;

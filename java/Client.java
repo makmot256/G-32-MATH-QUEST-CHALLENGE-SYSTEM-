@@ -101,8 +101,8 @@ public class Client {
             while ((response = reader.readLine()) != null && !response.isEmpty()) {
                 System.out.println(response);
                 if (response.contains("Applicant registered successfully!")) {
-                    displayParticipantMenu();
-                    handleParticipantOptions(scanner, writer, reader);
+                    displayMainMenu();
+                    handleMainMenuOptions(scanner, writer, reader);
                     return;
                 }
             }
@@ -328,13 +328,16 @@ public class Client {
      * @param  reader          the buffered reader object for receiving messages from the server
      * @throws IOException     if there is an error reading the server response
      */
-    private static void viewApplicants(Scanner scanner,PrintWriter writer, BufferedReader reader) {
+    private static void viewApplicants(Scanner scanner, PrintWriter writer, BufferedReader reader) {
         writer.println("viewApplicants");
         writer.flush();
-
+    
         try {
             String response;
-            while ((response = reader.readLine()) != null && !response.isEmpty()) {
+            while ((response = reader.readLine()) != null) {
+                if (response.equals("END_OF_RESPONSE")) {
+                    break;
+                }
                 System.out.println(response);
             }
             displaySchoolRepMenu();

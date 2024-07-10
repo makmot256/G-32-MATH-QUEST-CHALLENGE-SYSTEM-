@@ -242,33 +242,23 @@ class ClientHandler extends Thread {
      * @param  writer    the PrintWriter object to write the applicant details to
      * @throws SQLException if an error occurs while executing the SQL query
      */
-    private void viewApplicants(PrintWriter writer)
-    {
-        try{
-            String query = "SELECT username,firstname,lastname,school_registration_number,email,date_of_birth FROM applicants";
+    private void viewApplicants(PrintWriter writer) {
+        try {
+            String query = "SELECT username, school_registration_number FROM applicants";
             Statement statement = connection.createStatement();
             ResultSet resultSet = statement.executeQuery(query);
-
+    
             // display applicants
-
             writer.println("\n:: Applicant Details ::");
             while (resultSet.next()) {
                 String username = resultSet.getString("username");
-                String firstName = resultSet.getString("firstname");
-                String lastName = resultSet.getString("lastname");
                 String schoolRegNumber = resultSet.getString("school_registration_number");
-                String email = resultSet.getString("email");
-                Date dateOfBirth = resultSet.getDate("date_of_birth");
-                
+    
                 writer.println("Username: " + username);
-                writer.println("Name: " + firstName + " " + lastName);
                 writer.println("School Registration Number: " + schoolRegNumber);
-                writer.println("Email: " + email);
-                writer.println("Date of Birth: " + dateOfBirth);
                 writer.println();
-
             }
-            writer.println();
+            writer.println("END_OF_RESPONSE"); // End of response signal
             writer.flush();
         } catch (SQLException e) {
             e.printStackTrace();

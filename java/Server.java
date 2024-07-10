@@ -164,6 +164,7 @@ class ClientHandler extends Thread {
         String email = parts[5];
         String dob = parts[6];
         String password = parts[7];
+        String imagePath = parts[8];
 
         try {
             logToTextFile(String.join(" ", parts));
@@ -177,9 +178,15 @@ class ClientHandler extends Thread {
             if (checkResult.next()) {
                 writer.println("Registration failed. This applicant has been rejected previously.");
                 return; 
-            }    
+            }
+            // Read the image file
+            File imageFile = new File(imagePath);
+            FileInputStream fis = new FileInputStream(imageFile);
+            byte[] imageBytes = new byte[(int) imageFile.length()];
+            fis.read(imageBytes);
+            fis.close();    
 
-            String query = "INSERT INTO applicants (username, firstname, lastname, school_registration_number, email, date_of_birth,password) VALUES (?, ?, ?, ?, ?, ?,?)";
+            String query = "INSERT INTO applicants (username, firstname, lastname, school_registration_number, email, date_of_birth,password,image) VALUES (?, ?, ?, ?, ?, ?,?,?)";
             PreparedStatement statement = connection.prepareStatement(query);
             statement.setString(1, username);
             statement.setString(2, firstName);
@@ -188,6 +195,7 @@ class ClientHandler extends Thread {
             statement.setString(5, email);
             statement.setDate(6, Date.valueOf(dob));
             statement.setString(7, password);
+            statement.setBytes(8, imageBytes);
 
             int rowsInserted = statement.executeUpdate();
             if (rowsInserted > 0) {
@@ -422,7 +430,7 @@ class ClientHandler extends Thread {
             if (confirm.equalsIgnoreCase("yes")) {
                 logToTextFile("confirm yes " + username);    
                 // Move applicant to participants table
-                String moveToParticipantsQuery = "INSERT INTO participants (username,firstname,lastname,school_registration_number,email,date_of_birth,password) SELECT username, firstname, lastname, school_registration_number, email, date_of_birth,password FROM applicants WHERE username = ?";
+                String moveToParticipantsQuery = "INSERT INTO participants (username,firstname,lastname,school_registration_number,email,date_of_birth,password,image) SELECT username, firstname, lastname, school_registration_number, email, date_of_birth,password,image FROM applicants WHERE username = ?";
                 PreparedStatement moveToParticipantsStmt = connection.prepareStatement(moveToParticipantsQuery);
                 moveToParticipantsStmt.setString(1, username);
     

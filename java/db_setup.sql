@@ -10,7 +10,6 @@ CREATE TABLE schools (
     school_registration_number VARCHAR(255) UNIQUE NOT NULL,
     representative_email VARCHAR(255) NOT NULL,
     representative_name VARCHAR(255) NOT NULL,
-    -- validated BOOLEAN DEFAULT FALSE,
     FOREIGN KEY (representative_email) REFERENCES school_representatives(email),
     FOREIGN KEY (representative_name) REFERENCES school_representatives(name),
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
@@ -28,6 +27,7 @@ CREATE TABLE participants (
     date_of_birth DATE NOT NULL,
     status VARCHAR(255) NOT NULL DEFAULT 'confirmed',
     password VARCHAR(255) NOT NULL,
+    image BLOB,
     FOREIGN KEY (school_registration_number) REFERENCES schools(school_registration_number),
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
@@ -43,6 +43,7 @@ CREATE TABLE applicants (
     email VARCHAR(255) NOT NULL,
     date_of_birth DATE NOT NULL,
     password VARCHAR(255) NOT NULL,
+    image BLOB,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 );
@@ -124,7 +125,6 @@ CREATE TABLE challenge_questions (
     id INT AUTO_INCREMENT PRIMARY KEY,
     challenge_id INT NOT NULL,
     question_id INT NOT NULL,
-    -- PRIMARY KEY (challenge_id, question_id),
     FOREIGN KEY (challenge_id) REFERENCES challenges(id),
     FOREIGN KEY (question_id) REFERENCES questions(id)
 );

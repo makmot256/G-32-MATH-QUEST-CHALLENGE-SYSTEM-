@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 class Challenge extends Model
 {
     protected $fillable = [
-        'name', 'start_date', 'end_date', 'duration', 'number_of_questions',
+        'name', 'start_date', 'end_date', 'duration', 'num_questions', 'description', 
     ];
 
     // Relationships

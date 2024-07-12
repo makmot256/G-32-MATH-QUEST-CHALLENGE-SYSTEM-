@@ -21,8 +21,6 @@ class SchoolController extends Controller
             'school_registration_number' => 'required',
             'representative_email' => 'required|email',
             'representative_name' => 'required',
-            'created_at' => 'required',
-            'updated_at' => 'required',
         ]);
 
         School::create($request->all());

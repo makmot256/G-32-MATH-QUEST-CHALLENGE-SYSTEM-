@@ -14,7 +14,7 @@ return new class extends Migration
         Schema::disableForeignKeyConstraints();
 
         Schema::create('participants', function (Blueprint $table) {
-            $table->integer('id')->primary()->autoIncrement();
+            $table->integer('id')->primary();
             $table->string('username', 255)->unique();
             $table->string('firstname', 255);
             $table->string('lastname', 255);

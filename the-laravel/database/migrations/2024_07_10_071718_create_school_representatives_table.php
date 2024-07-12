@@ -13,14 +13,14 @@ return new class extends Migration
     {
         Schema::disableForeignKeyConstraints();
 
-        Schema::create('challenges', function (Blueprint $table) {
-            $table->integer('id')->primary()->autoIncrement();
-            $table->string('name', 255);
-            $table->date('start_date');
-            $table->date('end_date');
-            $table->integer('duration');
-            $table->integer('num_questions');
-            $table->string('description', 255);
+        Schema::create('school_representatives', function (Blueprint $table) {
+            $table->integer('id')->primary();
+            $table->string('username', 255)->unique();
+            $table->string('firstname', 255);
+            $table->string('lastname', 255);
+            $table->string('email', 255);
+            $table->string('password', 255);
+            //$table->boolean('validated')->nullable()->default(DEFAULT: FALSE);
             $table->timestamp('created_at')->nullable()->useCurrent();
             $table->timestamp('updated_at')->nullable()->useCurrent();
         });
@@ -33,6 +33,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('challenges');
+        Schema::dropIfExists('school_representatives');
     }
 };

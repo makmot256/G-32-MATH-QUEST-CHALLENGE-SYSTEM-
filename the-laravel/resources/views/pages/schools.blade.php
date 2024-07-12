@@ -95,7 +95,7 @@
                         <tr>
                             <td>{{ $school->name }}</td>
                             <td>{{ $school->district }}</td>
-                            <td>{{ $school->registration_number }}</td>
+                            <td>{{ $school->school_registration_number }}</td>
                             <td>{{ $school->email }}</td>
                             <td>{{ $school->representative }}</td>
                         </tr>
@@ -106,7 +106,7 @@
 
         <div class="add-school">
             <h2>Add New School</h2>
-            <form method="POST" action="{{ route('schools') }}">
+            <form method="POST" action="{{ route('submit_form') }}">
                 @csrf
                 <div class="form-group">
                     <label for="schoolName">School Name</label>
@@ -118,15 +118,15 @@
                 </div>
                 <div class="form-group">
                     <label for="registrationNumber">Registration Number</label>
-                    <input type="text" id="registrationNumber" name="registration_number" required>
+                    <input type="text" id="registrationNumber" name="school_registration_number" required>
                 </div>
                 <div class="form-group">
                     <label for="email"> Representative Email</label>
-                    <input type="email" id="email" name="email" required>
+                    <input type="email" id="email" name="representative_email" required>
                 </div>
                 <div class="form-group">
                     <label for="representative">Representative Name</label>
-                    <input type="text" id="representative" name="representative" required>
+                    <input type="text" id="representative" name="representative_name" required>
                 </div>
                 <div class="form-group">
                     <button type="submit">Add School</button>

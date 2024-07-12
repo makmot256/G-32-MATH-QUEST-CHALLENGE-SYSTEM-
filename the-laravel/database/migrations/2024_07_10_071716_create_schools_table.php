@@ -13,14 +13,14 @@ return new class extends Migration
     {
         Schema::disableForeignKeyConstraints();
 
-        Schema::create('school_representatives', function (Blueprint $table) {
-            $table->integer('id')->primary()->autoIncrement();
-            $table->string('username', 255)->unique();
-            $table->string('firstname', 255);
-            $table->string('lastname', 255);
-            $table->string('email', 255);
-            $table->string('password', 255);
-            $table->boolean('validated')->nullable()->default(DEFAULT: FALSE);
+        Schema::create('schools', function (Blueprint $table) {
+            $table->integer('id')->primary();
+            $table->string('name', 255);
+            $table->string('district', 255);
+            $table->string('school_registration_number', 255)->unique();
+            $table->string('representative_email', 255);
+            //$table->foreign('representative_email')->references('email')->on('school_representatives');
+            $table->string('representative_name', 255);
             $table->timestamp('created_at')->nullable()->useCurrent();
             $table->timestamp('updated_at')->nullable()->useCurrent();
         });
@@ -33,6 +33,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('school_representatives');
+        Schema::dropIfExists('schools');
     }
 };

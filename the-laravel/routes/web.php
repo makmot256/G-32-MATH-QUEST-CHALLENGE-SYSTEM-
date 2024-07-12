@@ -52,9 +52,7 @@ Route::group(['middleware' => 'auth'], function () {
     Route::get('upload', function () {
         return view('pages.upload');
     })->name('upload');
-    Route::get('virtual-reality', function () {
-        return view('pages.virtual-reality');
-    })->name('virtual-reality');
+
     Route::get('notifications', function () {
         return view('pages.notifications');
     })->name('notifications');
@@ -64,6 +62,8 @@ Route::group(['middleware' => 'auth'], function () {
 
     // Route::get('/upload', 'App\Http\Controllers\ChallengeController@showUploadForm')->name('upload.form');
     Route::post('/upload', 'App\Http\Controllers\ChallengeController@uploadFiles')->name('upload.files');
+
+    Route::post('form', 'FormController@submitForm')->name('submit_form');
 ;
 
 

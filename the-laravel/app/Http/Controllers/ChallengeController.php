@@ -21,7 +21,9 @@ class ChallengeController extends Controller
             'start_date' => 'required|date',
             'end_date' => 'required|date',
             'duration' => 'required|integer',
-            'number_of_questions' => 'required|integer',
+            'num_questions' => 'required|integer',
+            'description' => 'required|string',
+
         ]);
 
       
@@ -32,7 +34,8 @@ class ChallengeController extends Controller
             'start_date' => $request->get('start_date'),
             'end_date' => $request->get('end_date'),
             'duration' => $request->get('duration'),
-            'number_of_questions' => $request->get('number_of_questions'),
+            'num_questions' => $request->get('num_questions'),
+            'description' => $request->get('description'),
         ]);
 
 

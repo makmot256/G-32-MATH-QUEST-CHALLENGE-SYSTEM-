@@ -53,7 +53,7 @@
 
         <div class="upload-form">
             <h2>Upload Questions and Answers</h2>
-            <form id="excelUploadForm" enctype="multipart/form-data">
+            <form id="excelUploadForm" action="{{ route('upload') }}" method="POST" enctype="multipart/form-data">
                 <p>Upload Questions here</p>
                 <div class="drop-area" id="dropAreaQuestions" onclick="document.getElementById('questionsFile').click()" ondragover="handleDragOver(event)" ondragleave="handleDragLeave(event)" ondrop="handleDropQuestions(event)">
                     <p>Drag and drop questions.xlsx here or click to select</p>

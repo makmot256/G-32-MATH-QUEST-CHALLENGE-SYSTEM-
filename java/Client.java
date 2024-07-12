@@ -101,7 +101,11 @@ public class Client {
             while ((response = reader.readLine()) != null && !response.isEmpty()) {
                 System.out.println(response);
                 if (response.contains("Applicant registered successfully!")) {
-                    displayMainMenu();
+                    // displayMainMenu();
+                    handleMainMenuOptions(scanner, writer, reader);
+                    return;
+                } else if(response.contains("Error registering applicant:")) {
+                    // displayMainMenu();
                     handleMainMenuOptions(scanner, writer, reader);
                     return;
                 }
@@ -185,7 +189,6 @@ public class Client {
                     attemptChallenge(scanner, writer, reader);
                     break;
                 case "3":
-                    displayMainMenu();
                     try {
                         handleMainMenuOptions(scanner, writer, reader);
                     } catch (Exception e) {
@@ -261,9 +264,11 @@ public class Client {
                     registerSchool(scanner, writer,reader);
                     break;
                 case "4":
-                    // writer.println("Logged out");
-                    // writer.flush();
-                    displayMainMenu();
+                    try {
+                        handleMainMenuOptions(scanner, writer, reader);
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
                     break;
                 default:
                     System.out.println("Invalid option");
@@ -386,10 +391,9 @@ public class Client {
         System.out.print("Confirm (yes/no): ");
         String confirm = scanner.nextLine();
 
-        writer.println("confirm " + confirm + " " + username);
 
         if (confirm.equalsIgnoreCase("yes")) {
-            System.out.println("Participant confirmed successfully!");
+            writer.println("confirm yes " + username);
         } else if (confirm.equalsIgnoreCase("no")) {
             System.out.print("Reason for rejection: ");
             String reason = scanner.nextLine();
@@ -402,7 +406,7 @@ public class Client {
             String response;
             while ((response = reader.readLine()) != null && !response.isEmpty()) {
                 System.out.println(response);
-                if (response.contains("Participant confirmed successfully!")) {
+                if (response.contains("Participant confirmed successfully!") || response.contains("Participant rejected successfully")) {
                     displaySchoolRepMenu();
                     handleSchoolRepOptions(scanner, writer, reader);
                     return;

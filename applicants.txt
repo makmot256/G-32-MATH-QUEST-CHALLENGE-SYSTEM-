@@ -17,3 +17,9 @@ confirm yes Test9
 register test7 test8 test8 921275 mwesigwajojo@gmail.com 2023-09-09 test8 /home/isaac-flt/Projects/recess/G-32-MATH-QUEST-CHALLENGE-SYSTEM-/test-images/Abdullah Madu13.jpg
 register Test10 test10 test10 921275 test10@gmail.com 2023-01-01 test10 test-images/Abdullah Madu13.jpg
 register Test10 test10 test10 921275 test10@gmail.com 2023-01-09 test10 test-images/1.jpg
+confirm no Test11 
+confirm no Test11 just
+confirm no Test12 taep
+Test13
+Test13
+confirm no Test6 not applicable

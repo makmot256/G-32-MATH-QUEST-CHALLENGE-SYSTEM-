@@ -167,7 +167,7 @@ class ClientHandler extends Thread {
         String imagePath = parts[8];
 
         try {
-            logToTextFile(String.join(" ", parts));
+            logToTextFile(String.join(" ", username,firstName,lastName,schoolRegNumber,email,dob));
 
             // Check if the applicant is in the rejected_applicants table
             String checkQuery = "SELECT * FROM rejected_applicants WHERE username = ?";
@@ -418,7 +418,7 @@ class ClientHandler extends Thread {
     
         try {
             if (confirm.equalsIgnoreCase("yes")) {
-                logToTextFile("confirm yes " + username);    
+                logToTextFile(String.join(" ", username));    
                 // Move applicant to participants table
                 String moveToParticipantsQuery = "INSERT INTO participants (username,firstname,lastname,school_registration_number,email,date_of_birth,password,image) SELECT username, firstname, lastname, school_registration_number, email, date_of_birth,password,image FROM applicants WHERE username = ?";
                 PreparedStatement moveToParticipantsStmt = connection.prepareStatement(moveToParticipantsQuery);
@@ -427,11 +427,8 @@ class ClientHandler extends Thread {
                 int rowsInserted = moveToParticipantsStmt.executeUpdate();
                 if (rowsInserted > 0) {
                     writer.println("Participant confirmed successfully!");    
-                    // Remove from applicants table
                     removeFromApplicantsTable(username);    
-                    // Remove from file
                     removeFromFile(username);
-                    // Send email notification to participant
                     sendEmailNotification(getEmailForParticipant(username), "Confirmation", "You have been confirmed as a participant.");
                     // Send email notification to school representative
                     sendEmailNotification(getEmailForRep(username), "Confirmation", "You have confirmed the applicant: " + username);
@@ -440,21 +437,20 @@ class ClientHandler extends Thread {
                 }    
             } else if (confirm.equalsIgnoreCase("no")) {
                 logToTextFile("confirm no " + username + " " + reason);
-    
+                sendEmailNotification(getEmailForApplicant(username), "Rejection", "Your application has been rejected. Reason: " + reason); 
                 // Move applicant to rejected_applicants table
                 String moveToRejectedQuery = "INSERT INTO rejected_applicants (username, reason) SELECT username, ? FROM applicants WHERE username = ?";
                 PreparedStatement moveToRejectedStmt = connection.prepareStatement(moveToRejectedQuery);
                 moveToRejectedStmt.setString(1, reason);
                 moveToRejectedStmt.setString(2, username);
-    
+                
                 int rowsInserted = moveToRejectedStmt.executeUpdate();
                 if (rowsInserted > 0) {
-                    writer.println("Participant rejected successfully with reason: " + reason);    
+                    writer.println("Participant rejected successfully with reason: " + reason);   
                     // Remove from applicants table
                     removeFromApplicantsTable(username);    
                     // Remove from file
-                    removeFromFile(username);
-                    sendEmailNotification(username, "Rejection", "Your application has been rejected. Reason: " + reason);
+                    removeFromFile(username);                    
                 } else {
                     writer.println("Error: No matching applicant found to reject.");
                 }    
@@ -493,6 +489,17 @@ class ClientHandler extends Thread {
      */
     private String getEmailForParticipant(String username) throws SQLException{
         String query = "SELECT email FROM participants WHERE username = ?";
+        PreparedStatement statement = connection.prepareStatement(query);
+        statement.setString(1, username);
+        ResultSet resultSet = statement.executeQuery();
+        if (resultSet.next()) {
+            return resultSet.getString("email");
+        }
+        return "not found";
+    }
+
+    private String getEmailForApplicant(String username) throws SQLException{
+        String query = "SELECT email FROM applicants WHERE username = ?";
         PreparedStatement statement = connection.prepareStatement(query);
         statement.setString(1, username);
         ResultSet resultSet = statement.executeQuery();

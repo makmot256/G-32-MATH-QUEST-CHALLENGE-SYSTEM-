@@ -96,8 +96,8 @@
                             <td>{{ $school->name }}</td>
                             <td>{{ $school->district }}</td>
                             <td>{{ $school->school_registration_number }}</td>
-                            <td>{{ $school->email }}</td>
-                            <td>{{ $school->representative }}</td>
+                            <td>{{ $school->representative_email }}</td>
+                            <td>{{ $school->representative_name }}</td>
                         </tr>
                     @endforeach
                 </tbody>

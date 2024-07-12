@@ -12,7 +12,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('rejected_applicants', function (Blueprint $table) {
-            $table->integer('id')->primary();
+            $table->id();
             $table->string('username', 255);
             $table->text('reason');
             $table->timestamp('created_at')->nullable()->useCurrent();

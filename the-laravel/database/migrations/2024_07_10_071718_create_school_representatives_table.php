@@ -14,13 +14,13 @@ return new class extends Migration
         Schema::disableForeignKeyConstraints();
 
         Schema::create('school_representatives', function (Blueprint $table) {
-            $table->integer('id')->primary();
+            $table->id();
             $table->string('username', 255)->unique();
             $table->string('firstname', 255);
             $table->string('lastname', 255);
             $table->string('email', 255);
             $table->string('password', 255);
-            //$table->boolean('validated')->nullable()->default(DEFAULT: FALSE);
+           // $table->boolean('validated')->nullable()->default(DEFAULT: FALSE);
             $table->timestamp('created_at')->nullable()->useCurrent();
             $table->timestamp('updated_at')->nullable()->useCurrent();
         });

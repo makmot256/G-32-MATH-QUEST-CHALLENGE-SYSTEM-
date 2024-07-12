@@ -14,7 +14,7 @@ return new class extends Migration
         Schema::disableForeignKeyConstraints();
 
         Schema::create('participant_attempts', function (Blueprint $table) {
-            $table->integer('id')->primary();
+            $table->id();
             $table->integer('participant_id');
             $table->foreign('participant_id')->references('id')->on('participants');
             $table->integer('challenge_id');

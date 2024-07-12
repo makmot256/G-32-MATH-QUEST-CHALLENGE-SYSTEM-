@@ -11,7 +11,7 @@ CREATE TABLE schools (
     representative_email VARCHAR(255) NOT NULL,
     representative_name VARCHAR(255) NOT NULL,
     FOREIGN KEY (representative_email) REFERENCES school_representatives(email),
-    FOREIGN KEY (representative_name) REFERENCES school_representatives(name),
+    FOREIGN KEY (representative_name) REFERENCES school_representatives(username),
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 );

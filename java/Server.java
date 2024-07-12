@@ -22,7 +22,7 @@ public class Server {
 
         try {
             Class.forName("com.mysql.cj.jdbc.Driver");
-            connection = DriverManager.getConnection("jdbc:mysql://localhost:3306/math_quest", "root", "root");
+            connection = DriverManager.getConnection("jdbc:mysql://localhost:3306/math_quest", "root", "");
             try (ServerSocket serverSocket = new ServerSocket(PORT)) {
                 System.out.println("Server is listening on port " + PORT);
                 while (true) {

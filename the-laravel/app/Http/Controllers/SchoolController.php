@@ -28,28 +28,6 @@ class SchoolController extends Controller
         School::create($request->all());
         return redirect()->route('schools');
 
-        $school = new School([
-            'name' => $request->get('name'),
-            'district' => $request->get('district'),
-            'school_registration_number' => $request->get('school_registration_number'),
-            'representative_email' => $request->get('representative_email'),
-            'representative_name' => $request->get('representative_name'),
-            'created_at' => $request->get('created_at'),
-            'updated_at' => $request->get('updated_at'),
-        ]);
-
-        
-        try {
-            $school->save();
-            Log::info('Schools saved successfully:', $school->toArray());
-
-            // Redirect to the challenges page with a success message
-            return redirect()->route('school')->with('success', 'School created successfully.');
-        } catch (\Exception $e) {
-            Log::error('Error saving school:', ['message' => $e->getMessage()]);
-            return redirect()->route('school')->with('error', 'Failed to create school.');
-        }
-
 
     }
 }

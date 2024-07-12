@@ -106,7 +106,7 @@
 
         <div class="add-school">
             <h2>Add New School</h2>
-            <form method="POST" action="{{ route('submit_form') }}">
+            <form method="POST" action="{{ route('schools') }}">
                 @csrf
                 <div class="form-group">
                     <label for="schoolName">School Name</label>

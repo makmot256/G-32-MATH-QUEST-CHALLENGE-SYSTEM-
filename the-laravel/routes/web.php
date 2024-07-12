@@ -46,8 +46,8 @@ Route::group(['middleware' => 'auth'], function () {
     Route::get('/challenges', [ChallengeController::class, 'index'])->name('challenges');
     Route::post('/challenges', [ChallengeController::class, 'store']);
 
-    Route::get('schools', [SchoolController::class, 'index'])->name('schools');
-    Route::post('schools', [SchoolController::class, 'store']);
+    //Route::get('schools', [SchoolController::class, 'index'])->name('schools');
+    //Route::post('schools', [SchoolController::class, 'store']);
 
     Route::get('upload', function () {
         return view('pages.upload');
@@ -58,12 +58,11 @@ Route::group(['middleware' => 'auth'], function () {
     })->name('notifications');
 
     Route::get('/schools', [SchoolController::class, 'index'])->name('schools');
-    Route::post('/schools', [SchoolController::class, 'store'])->name('schools');
+    Route::post('/schools', [SchoolController::class, 'store'])->name('schools.store');
 
     // Route::get('/upload', 'App\Http\Controllers\ChallengeController@showUploadForm')->name('upload.form');
     Route::post('/upload', 'App\Http\Controllers\ChallengeController@uploadFiles')->name('upload.files');
 
-    Route::post('form', 'FormController@submitForm')->name('submit_form');
 ;
 
 

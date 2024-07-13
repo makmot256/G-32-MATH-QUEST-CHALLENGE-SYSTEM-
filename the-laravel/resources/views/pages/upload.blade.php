@@ -6,6 +6,7 @@
         <!-- End Navbar -->
         <head>
             <title>Upload Excel Documents</title>
+            <link href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css" rel="stylesheet">
             <style>
                 body {
                     font-family: Arial, sans-serif;
@@ -54,30 +55,31 @@
         <div class="upload-form">
             <h2>Upload Questions and Answers</h2>
             <form id="excelUploadForm" action="{{ route('upload') }}" method="POST" enctype="multipart/form-data">
+                @csrf
                 <p>Upload Questions here</p>
                 <div class="drop-area" id="dropAreaQuestions" onclick="document.getElementById('questionsFile').click()" ondragover="handleDragOver(event)" ondragleave="handleDragLeave(event)" ondrop="handleDropQuestions(event)">
                     <p>Drag and drop questions.xlsx here or click to select</p>
-                    <input type="file" id="questionsFile" name="questionsFile" accept=".xls,.xlsx" style="display: none;" multiple>
+                    <input type="file" id="questionsFile" name="questionsFile" accept=".xls,.xlsx" style="display: none;">
                 </div>
-                <p>Or</p>
                 <div>
                     <label for="fileInputQuestions">Select Questions File:</label>
-                    <input type="file" id="fileInputQuestions" name="fileInputQuestions" accept=".xls,.xlsx" multiple>
+                    <input type="file" id="fileInputQuestions" name="fileInputQuestions" accept=".xls,.xlsx">
                 </div>
                 <p>Upload Answers here</p>
                 <div class="drop-area" id="dropAreaAnswers" onclick="document.getElementById('answersFile').click()" ondragover="handleDragOver(event)" ondragleave="handleDragLeave(event)" ondrop="handleDropAnswers(event)">
                     <p>Drag and drop answers.xlsx here or click to select</p>
-                    <input type="file" id="answersFile" name="answersFile" accept=".xls,.xlsx" style="display: none;" multiple>
+                    <input type="file" id="answersFile" name="answersFile" accept=".xls,.xlsx" style="display: none;">
                 </div>
-                <p>Or</p>
                 <div>
                     <label for="fileInputAnswers">Select Answers File:</label>
-                    <input type="file" id="fileInputAnswers" name="fileInputAnswers" accept=".xls,.xlsx" multiple>
+                    <input type="file" id="fileInputAnswers" name="fileInputAnswers" accept=".xls,.xlsx">
                 </div>
-                <button type="button" onclick="uploadExcel()">Upload Files</button>
+                <button type="submit">Upload Files</button>
             </form>
         </div>
 
+        <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
         <script>
             function handleDragOver(event) {
                 event.preventDefault();
@@ -106,44 +108,15 @@
                 document.getElementById('answersFile').files = event.dataTransfer.files;
             }
 
-            function uploadExcel() {
-                var questionsFile = document.getElementById('questionsFile').files[0];
-                var answersFile = document.getElementById('answersFile').files[0];
-                var fileInputQuestions = document.getElementById('fileInputQuestions').files[0];
-                var fileInputAnswers = document.getElementById('fileInputAnswers').files[0];
+            $(document).ready(function() {
+                @if(session('success'))
+                    toastr.success('{{ session('success') }}');
+                @endif
 
-                // Check if at least one file is selected
-                if (!questionsFile && !answersFile && !fileInputQuestions && !fileInputAnswers) {
-                    alert("Please select at least one file.");
-                    return;
-                }
-
-                var formData = new FormData();
-                if (questionsFile) formData.append('questionsFile', questionsFile);
-                if (answersFile) formData.append('answersFile', answersFile);
-                if (fileInputQuestions) formData.append('fileInputQuestions', fileInputQuestions);
-                if (fileInputAnswers) formData.append('fileInputAnswers', fileInputAnswers);
-
-                // Replace 'upload.php' with your server-side script that handles file upload
-                fetch('upload.php', {
-                    method: 'POST',
-                    body: formData
-                })
-                .then(response => {
-                    if (!response.ok) {
-                        throw new Error('Network response was not ok');
-                    }
-                    return response.text();
-                })
-                .then(data => {
-                    alert('Files uploaded successfully!');
-                    console.log(data);
-                })
-                .catch(error => {
-                    console.error('Error:', error);
-                    alert('Error uploading files.');
-                });
-            }
+                @if(session('error'))
+                    toastr.error('{{ session('error') }}');
+                @endif
+            });
         </script>
 
         </body>

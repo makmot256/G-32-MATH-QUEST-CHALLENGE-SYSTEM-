@@ -51,7 +51,7 @@
                 <a class="nav-link text-white {{ $activePage == 'schools' ? ' active bg-gradient-primary' : '' }} "
                     href="{{ route('schools') }}">
                     <div class="text-white text-center me-2 d-flex align-items-center justify-content-center">
-                        <i class="material-icons opacity-10">table_view</i>
+                        <i class="material-icons opacity-10">school</i>
                     </div>
                     <span class="nav-link-text ms-1">Schools</span>
                 </a>
@@ -60,7 +60,7 @@
                 <a class="nav-link text-white {{ $activePage == 'challenges' ? ' active bg-gradient-primary' : '' }}  "
                     href="{{ route('challenges') }}">
                     <div class="text-white text-center me-2 d-flex align-items-center justify-content-center">
-                        <i class="material-icons opacity-10">receipt_long</i>
+                        <i class="material-icons opacity-10">quiz</i>
                     </div>
                     <span class="nav-link-text ms-1">Challenges</span>
                 </a>
@@ -70,7 +70,7 @@
                 <a class="nav-link text-white {{ $activePage == 'upload' ? ' active bg-gradient-primary' : '' }}  "
                     href="{{ route('upload') }}">
                     <div class="text-white text-center me-2 d-flex align-items-center justify-content-center">
-                        <i class="material-icons opacity-10">format_textdirection_r_to_l</i>
+                        <i class="material-icons opacity-10">upload</i>
                     </div>
                     <span class="nav-link-text ms-1">Upload</span>
                 </a>

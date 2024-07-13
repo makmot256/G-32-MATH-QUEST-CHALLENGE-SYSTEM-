@@ -61,7 +61,7 @@ Route::group(['middleware' => 'auth'], function () {
     Route::post('/schools', [SchoolController::class, 'store'])->name('schools.store');
 
     Route::post('/upload', [ChallengeController::class, 'upload'])->name('upload');
-
+    
 ;
 
 

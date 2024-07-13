@@ -60,8 +60,7 @@ Route::group(['middleware' => 'auth'], function () {
     Route::get('/schools', [SchoolController::class, 'index'])->name('schools');
     Route::post('/schools', [SchoolController::class, 'store'])->name('schools.store');
 
-    // Route::get('/upload', 'App\Http\Controllers\ChallengeController@showUploadForm')->name('upload.form');
-    Route::post('/upload', 'App\Http\Controllers\ChallengeController@uploadFiles')->name('upload.files');
+    Route::post('/upload', [ChallengeController::class, 'upload'])->name('upload');
 
 ;
 

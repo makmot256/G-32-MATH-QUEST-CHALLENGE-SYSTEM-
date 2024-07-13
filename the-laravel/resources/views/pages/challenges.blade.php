@@ -100,57 +100,59 @@
             <div class="challenge-list">
                 <h2>Challenges</h2>
                 <table id="challengesTable">
-                    <thead>
-                        <tr>
-                            <th>Challenge Name</th>
-                            <th>Start Date</th>
-                            <th>End Date</th>
-                            <th>Duration (minutes)</th>
-                            <th>Number of Questions</th>
-                            <th>Status</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @foreach($challenges as $challenge)
-                            <tr>
-                                <td>{{ $challenge->name }}</td>
-                                <td>{{ $challenge->start_date }}</td>
-                                <td>{{ $challenge->end_date }}</td>
-                                <td>{{ $challenge->duration }}</td>
-                                <td>{{ $challenge->number_of_questions }}</td>
-                                <td class="status-{{ $challenge->status }}">{{ ucfirst($challenge->status) }}</td>
-                            </tr>
-                        @endforeach
-                    </tbody>
-                </table>
+    <thead>
+        <tr>
+            <th>Challenge Name</th>
+            <th>Start Date</th>
+            <th>End Date</th>
+            <th>Duration (minutes)</th>
+            <th>Number of Questions</th>
+            <th>Status</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach($challenges as $challenge)
+            <tr>
+                <td>{{ $challenge->name }}</td>
+                <td>{{ $challenge->start_date }}</td>
+                <td>{{ $challenge->end_date }}</td>
+                <td>{{ $challenge->duration }}</td>
+                <td>{{ $challenge->num_questions }}</td>
+                <td class="status-{{ $challenge->status }}">{{ ucfirst($challenge->status) }}</td>
+            </tr>
+        @endforeach
+    </tbody>
+</table>
+
             </div>
 
             <div class="new-challenge-form">
                 <h2>Create New Challenge</h2>
-                <form id="newChallengeForm" method="POST" action="{{ url('/challenges') }}">
-                    @csrf
-                    <div class="form-group">
-                        <label for="name">Challenge Name</label>
-                        <input type="text" id="name" name="name" class="form-control" required>
-                    </div>
-                    <div class="form-group">
-                        <label for="start_date">Start Date</label>
-                        <input type="date" id="start_date" name="start_date" class="form-control" required>
-                    </div>
-                    <div class="form-group">
-                        <label for="end_date">End Date</label>
-                        <input type="date" id="end_date" name="end_date" class="form-control" required>
-                    </div>
-                    <div class="form-group">
-                        <label for="duration">Duration (minutes)</label>
-                        <input type="number" id="duration" name="duration" class="form-control" required>
-                    </div>
-                    <div class="form-group">
-                        <label for="number_of_questions">Number of Questions</label>
-                        <input type="number" id="number_of_questions" name="number_of_questions" class="form-control" required>
-                    </div>
-                    <button type="submit">Create Challenge</button>
-                </form>
+                <form id="newChallengeForm" method="POST" action="{{ route('challenges') }}">
+    @csrf
+    <div class="form-group">
+        <label for="name">Challenge Name</label>
+        <input type="text" id="name" name="name" class="form-control" required>
+    </div>
+    <div class="form-group">
+        <label for="start_date">Start Date</label>
+        <input type="date" id="start_date" name="start_date" class="form-control" required>
+    </div>
+    <div class="form-group">
+        <label for="end_date">End Date</label>
+        <input type="date" id="end_date" name="end_date" class="form-control" required>
+    </div>
+    <div class="form-group">
+        <label for="duration">Duration (minutes)</label>
+        <input type="number" id="duration" name="duration" class="form-control" required>
+    </div>
+    <div class="form-group">
+        <label for="number_of_questions">Number of Questions</label>
+        <input type="number" id="number_of_questions" name="num_questions" class="form-control" required>
+    </div>
+    <button type="submit">Create Challenge</button>
+</form>
+
 
             </div>
 

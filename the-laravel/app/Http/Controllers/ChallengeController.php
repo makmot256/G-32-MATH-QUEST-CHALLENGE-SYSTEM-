@@ -22,28 +22,14 @@ class ChallengeController extends Controller
             'end_date' => 'required|date',
             'duration' => 'required|integer',
             'num_questions' => 'required|integer',
-            'description' => 'required|string',
-
         ]);
 
-      
         Log::info('Store Challenge Request Data:', $request->all());
 
-        $challenge = new Challenge([
-            'name' => $request->get('name'),
-            'start_date' => $request->get('start_date'),
-            'end_date' => $request->get('end_date'),
-            'duration' => $request->get('duration'),
-            'num_questions' => $request->get('num_questions'),
-            'description' => $request->get('description'),
-        ]);
-
-
         try {
-            $challenge->save();
+            $challenge = Challenge::create($request->all());
             Log::info('Challenge saved successfully:', $challenge->toArray());
 
-            // Redirect to the challenges page with a success message
             return redirect()->route('challenges')->with('success', 'Challenge created successfully.');
         } catch (\Exception $e) {
             Log::error('Error saving challenge:', ['message' => $e->getMessage()]);

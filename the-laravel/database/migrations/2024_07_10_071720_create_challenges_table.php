@@ -20,7 +20,7 @@ return new class extends Migration
             $table->date('end_date');
             $table->integer('duration');
             $table->integer('num_questions');
-            $table->string('description', 255);
+            // $table->string('description', 255);
             $table->timestamp('created_at')->nullable()->useCurrent();
             $table->timestamp('updated_at')->nullable()->useCurrent();
         });

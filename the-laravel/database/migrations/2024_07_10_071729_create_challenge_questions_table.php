@@ -1,5 +1,4 @@
 <?php
-
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
@@ -11,17 +10,14 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::disableForeignKeyConstraints();
-
         Schema::create('challenge_questions', function (Blueprint $table) {
             $table->id();
-            $table->integer('challenge_id');
-            $table->foreign('challenge_id')->references('id')->on('challenges');
-            $table->integer('question_id');
-            $table->foreign('question_id')->references('id')->on('questions');
+            $table->unsignedBigInteger('challenge_id');
+            $table->unsignedBigInteger('question_id');
+            
+            $table->foreign('challenge_id')->references('id')->on('challenges')->onDelete('cascade');
+            $table->foreign('question_id')->references('id')->on('questions')->onDelete('cascade');
         });
-
-        Schema::enableForeignKeyConstraints();
     }
 
     /**

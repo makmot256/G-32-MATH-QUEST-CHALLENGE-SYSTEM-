@@ -20,7 +20,7 @@ return new class extends Migration
             $table->string('lastname', 255);
             $table->string('email', 255);
             $table->string('password', 255);
-           // $table->boolean('validated')->nullable()->default(DEFAULT: FALSE);
+            //$table->boolean('validated')->nullable()->default(DEFAULT: FALSE);
             $table->timestamp('created_at')->nullable()->useCurrent();
             $table->timestamp('updated_at')->nullable()->useCurrent();
         });

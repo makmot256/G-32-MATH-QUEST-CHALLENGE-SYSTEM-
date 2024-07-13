@@ -11,12 +11,7 @@
             </div>
             <div class="card card-body mx-3 mx-md-4 mt-n6">
                 <div class="row gx-4 mb-2">
-                    <div class="col-auto">
-                        <div class="avatar avatar-xl position-relative">
-                            <img src="{{ asset('assets') }}/img/bruce-mars.jpg" alt="profile_image"
-                                class="w-100 border-radius-lg shadow-sm">
-                        </div>
-                    </div>
+                    
                     <div class="col-auto my-auto">
                         <div class="h-100">
                             <h5 class="mb-1">
@@ -70,7 +65,7 @@
                                                 <input class="form-check-input ms-auto" type="checkbox"
                                                     id="flexSwitchCheckDefault" checked>
                                                 <label class="form-check-label text-body ms-3 text-truncate w-80 mb-0"
-                                                    for="flexSwitchCheckDefault">Email me when a participant  logs in
+                                                    for="flexSwitchCheckDefault">Email us when a participant  logs in
                                                 </label>
                                             </div>
                                         </li>
@@ -88,7 +83,7 @@
                                                 <input class="form-check-input ms-auto" type="checkbox"
                                                     id="flexSwitchCheckDefault2" checked>
                                                 <label class="form-check-label text-body ms-3 text-truncate w-80 mb-0"
-                                                    for="flexSwitchCheckDefault2">Email me when someone mentions
+                                                    for="flexSwitchCheckDefault2">Email us when someone mentions
                                                     me</label>
                                             </div>
                                         </li>

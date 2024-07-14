@@ -52,15 +52,15 @@ Route::group(['middleware' => 'auth'], function () {
     Route::get('upload', function () {
         return view('pages.upload');
     })->name('upload');
+    Route::post('/upload', [ChallengeController::class, 'upload'])->name('upload');
 
     Route::get('notifications', function () {
         return view('pages.notifications');
     })->name('notifications');
-
+    
     Route::get('/schools', [SchoolController::class, 'index'])->name('schools');
     Route::post('/schools', [SchoolController::class, 'store'])->name('schools.store');
 
-    Route::post('/upload', [ChallengeController::class, 'upload'])->name('upload');
     
 ;
 

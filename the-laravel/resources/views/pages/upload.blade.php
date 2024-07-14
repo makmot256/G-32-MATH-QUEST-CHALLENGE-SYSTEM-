@@ -57,19 +57,11 @@
             <form id="excelUploadForm" action="{{ route('upload') }}" method="POST" enctype="multipart/form-data">
                 @csrf
                 <p>Upload Questions here</p>
-                <div class="drop-area" id="dropAreaQuestions" onclick="document.getElementById('questionsFile').click()" ondragover="handleDragOver(event)" ondragleave="handleDragLeave(event)" ondrop="handleDropQuestions(event)">
-                    <p>Drag and drop questions.xlsx here or click to select</p>
-                    <input type="file" id="questionsFile" name="questionsFile" accept=".xls,.xlsx" style="display: none;">
-                </div>
                 <div>
                     <label for="fileInputQuestions">Select Questions File:</label>
                     <input type="file" id="fileInputQuestions" name="fileInputQuestions" accept=".xls,.xlsx">
                 </div>
                 <p>Upload Answers here</p>
-                <div class="drop-area" id="dropAreaAnswers" onclick="document.getElementById('answersFile').click()" ondragover="handleDragOver(event)" ondragleave="handleDragLeave(event)" ondrop="handleDropAnswers(event)">
-                    <p>Drag and drop answers.xlsx here or click to select</p>
-                    <input type="file" id="answersFile" name="answersFile" accept=".xls,.xlsx" style="display: none;">
-                </div>
                 <div>
                     <label for="fileInputAnswers">Select Answers File:</label>
                     <input type="file" id="fileInputAnswers" name="fileInputAnswers" accept=".xls,.xlsx">
@@ -78,36 +70,8 @@
             </form>
         </div>
 
-        <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-        <script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
+        <script src="{{ asset('js/app.js') }}"></script>
         <script>
-            function handleDragOver(event) {
-                event.preventDefault();
-                event.stopPropagation();
-                event.dataTransfer.dropEffect = 'copy';
-                event.currentTarget.classList.add('highlight');
-            }
-
-            function handleDragLeave(event) {
-                event.preventDefault();
-                event.stopPropagation();
-                event.currentTarget.classList.remove('highlight');
-            }
-
-            function handleDropQuestions(event) {
-                event.preventDefault();
-                event.stopPropagation();
-                document.getElementById('dropAreaQuestions').classList.remove('highlight');
-                document.getElementById('questionsFile').files = event.dataTransfer.files;
-            }
-
-            function handleDropAnswers(event) {
-                event.preventDefault();
-                event.stopPropagation();
-                document.getElementById('dropAreaAnswers').classList.remove('highlight');
-                document.getElementById('answersFile').files = event.dataTransfer.files;
-            }
-
             $(document).ready(function() {
                 @if(session('success'))
                     toastr.success('{{ session('success') }}');

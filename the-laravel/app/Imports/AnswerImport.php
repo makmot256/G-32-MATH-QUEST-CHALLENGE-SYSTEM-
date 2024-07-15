@@ -6,21 +6,26 @@ use Maatwebsite\Excel\Concerns\ToModel;
 use App\Models\Question;
 use Maatwebsite\Excel\Concerns\WithHeadingRow;
 
-class AnswerImport implements ToModel,WithHeadingRow
+class AnswerImport implements ToModel, WithHeadingRow
 {
-
     public function model(array $row)
     {
         $question = Question::where('question_text', $row['question_text'])->first();
 
         if ($question) {
-            // Update existing question with answer and marks
+            Log::info('Updating Answer for Question:', $row);
+
             $question->update([
                 'answer' => $row['answer'],
                 'marks' => $row['marks'],
             ]);
+        } else {
+            Log::warning('Question not found for Answer:', $row);
         }
 
-        return null; // Return null to avoid inserting new records
+        return null; // Returning null to avoid inserting new records
     }
 }
+
+
+

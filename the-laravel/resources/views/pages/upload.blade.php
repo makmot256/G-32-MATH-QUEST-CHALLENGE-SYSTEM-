@@ -26,17 +26,6 @@
                 .upload-form input[type="file"] {
                     margin-top: 5px;
                 }
-                .upload-form .drop-area {
-                    border: 2px dashed #ccc;
-                    padding: 20px;
-                    margin-top: 20px;
-                    background-color: #f0f0f0;
-                    text-align: left;
-                    cursor: pointer;
-                }
-                .upload-form .drop-area.highlight {
-                    border-color: #007bff;
-                }
                 .upload-form button {
                     margin-top: 10px;
                     padding: 10px 20px;
@@ -52,9 +41,9 @@
         </head>
         <body>
 
-        <div class="upload-form">
+         <div class="upload-form">
             <h2>Upload Questions and Answers</h2>
-            <form id="excelUploadForm" action="{{ route('upload') }}" method="POST" enctype="multipart/form-data">
+            <form id="excelUploadForm" method="POST" enctype="multipart/form-data">
                 @csrf
                 <p>Upload Questions here</p>
                 <div>
@@ -66,23 +55,47 @@
                     <label for="fileInputAnswers">Select Answers File:</label>
                     <input type="file" id="fileInputAnswers" name="fileInputAnswers" accept=".xls,.xlsx">
                 </div>
-                <button type="submit">Upload Files</button>
+                <button type="button" onclick="uploadExcel()">Upload Files</button>
             </form>
-        </div>
+         </div>
 
-        <script src="{{ asset('js/app.js') }}"></script>
-        <script>
-            $(document).ready(function() {
-                @if(session('success'))
-                    toastr.success('{{ session('success') }}');
-                @endif
+         <script>
+           function uploadExcel() {
+           var fileInputQuestions = document.getElementById('fileInputQuestions').files[0];
+           var fileInputAnswers = document.getElementById('fileInputAnswers').files[0];
 
-                @if(session('error'))
-                    toastr.error('{{ session('error') }}');
-                @endif
-            });
-        </script>
+           if (!fileInputQuestions || !fileInputAnswers) {
+            alert("Please select both question and answer files.");
+            return;
+         }
 
+         var formData = new FormData();
+         formData.append('fileInputQuestions', fileInputQuestions);
+         formData.append('fileInputAnswers', fileInputAnswers);
+
+         fetch('{{ route("upload") }}', {
+            method: 'POST',
+            body: formData,
+            headers: {
+                'X-CSRF-TOKEN': '{{ csrf_token() }}'
+            }
+         })
+         .then(response => {
+            if (!response.ok) {
+                throw new Error('Network response was not ok: ' + response.statusText);
+            }
+            return response.text();
+         })
+         .then(data => {
+            console.log('Server Response:', data);
+            alert('Files uploaded successfully!');
+         })
+         .catch(error => {
+            console.error('Error:', error);
+            alert('Error uploading files.');
+         });
+         }
+         </script>
         </body>
         <x-footers.auth></x-footers.auth>
     </main>

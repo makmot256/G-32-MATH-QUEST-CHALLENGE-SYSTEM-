@@ -55,47 +55,23 @@
                     <label for="fileInputAnswers">Select Answers File:</label>
                     <input type="file" id="fileInputAnswers" name="fileInputAnswers" accept=".xls,.xlsx">
                 </div>
-                <button type="button" onclick="uploadExcel()">Upload Files</button>
+                <button type="submit">Upload Files</button>
             </form>
          </div>
 
+         <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+         <script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
          <script>
-           function uploadExcel() {
-           var fileInputQuestions = document.getElementById('fileInputQuestions').files[0];
-           var fileInputAnswers = document.getElementById('fileInputAnswers').files[0];
+            $(document).ready(function() {
+                @if(session('success'))
+                    toastr.success('{{ session('success') }}');
+                @endif
+                @if(session('error'))
+                    toastr.error('{{ session('error') }}');
+                @endif
+            });
+        </script>
 
-           if (!fileInputQuestions || !fileInputAnswers) {
-            alert("Please select both question and answer files.");
-            return;
-         }
-
-         var formData = new FormData();
-         formData.append('fileInputQuestions', fileInputQuestions);
-         formData.append('fileInputAnswers', fileInputAnswers);
-
-         fetch('{{ route("upload") }}', {
-            method: 'POST',
-            body: formData,
-            headers: {
-                'X-CSRF-TOKEN': '{{ csrf_token() }}'
-            }
-         })
-         .then(response => {
-            if (!response.ok) {
-                throw new Error('Network response was not ok: ' + response.statusText);
-            }
-            return response.text();
-         })
-         .then(data => {
-            console.log('Server Response:', data);
-            alert('Files uploaded successfully!');
-         })
-         .catch(error => {
-            console.error('Error:', error);
-            alert('Error uploading files.');
-         });
-         }
-         </script>
         </body>
         <x-footers.auth></x-footers.auth>
     </main>

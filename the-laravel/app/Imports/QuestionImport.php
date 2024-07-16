@@ -2,6 +2,7 @@
 
 namespace App\Imports;
 
+use Illuminate\Support\Collection;
 use Maatwebsite\Excel\Concerns\ToModel;
 use Maatwebsite\Excel\Concerns\WithHeadingRow;
 use App\Models\Question;
@@ -15,8 +16,6 @@ class QuestionImport implements ToModel, WithHeadingRow
 
         return new Question([
             'question_text' => $row['question_text'],
-            'answer' => $row['answer'],
-            'marks' => $row['marks'],
         ]);
     }
 }

@@ -70,20 +70,5 @@ class ChallengeController extends Controller
         }
     }
 
-      public function processForm(Request $request)
-     {
-        $validator = Validator::make($request->all(), [
-        'fileInputQuestions' => 'required|mimes:csv,txt', // Example validation for CSV or TXT files
-        'fileInputAnswers' => 'required|mimes:csv,txt',
-       ]);
-
-       if ($validator->fails()) {
-        return redirect('upload')
-                    ->withErrors($validator)
-                    ->withInput();
-       }
-
-     // Process your form submission here if validation passes
-     }
 
 }

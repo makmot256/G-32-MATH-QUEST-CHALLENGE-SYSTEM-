@@ -17,7 +17,7 @@ return new class extends Migration
             $table->id();
             $table->text('question_text')->nullable();
             $table->text('answer')->nullable();
-            $table->integer('marks');
+            $table->integer('marks')->nullable();
             $table->timestamp('created_at')->nullable()->useCurrent();
             $table->timestamp('updated_at')->nullable()->useCurrent();
         });

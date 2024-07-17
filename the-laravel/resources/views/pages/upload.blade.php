@@ -55,7 +55,7 @@
                     <label for="fileInputAnswers">Select Answers File:</label>
                     <input type="file" id="fileInputAnswers" name="fileInputAnswers" accept=".xls,.xlsx">
                 </div>
-                <button type="submit">Upload Files</button>
+                <button class="btn btn-primary" type="submit">Upload Files</button>
             </form>
          </div>
 

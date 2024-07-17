@@ -132,7 +132,7 @@
                     <input type="text" id="representative" name="representative_name" required>
                 </div>
                 <div class="form-group">
-                    <button type="submit">Add School</button>
+                    <button class="btn btn-primary" type="submit">Add School</button>
                 </div>
             </form>
         </div>

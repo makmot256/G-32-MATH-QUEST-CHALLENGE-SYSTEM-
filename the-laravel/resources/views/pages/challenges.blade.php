@@ -150,7 +150,7 @@
         <label for="number_of_questions">Number of Questions</label>
         <input type="number" id="number_of_questions" name="num_questions" class="form-control" required>
     </div>
-    <button type="submit">Create Challenge</button>
+    <button class="btn btn-primary" type="submit">Create Challenge</button>
 </form>
 
 

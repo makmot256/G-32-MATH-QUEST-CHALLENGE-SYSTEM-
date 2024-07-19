@@ -167,8 +167,6 @@ class ClientHandler extends Thread {
         String imagePath = parts[8];
 
         try {
-            logToTextFile(String.join(" ", username,firstName,lastName,schoolRegNumber,email,dob));
-
             // Check if the applicant is in the rejected_applicants table
             String checkQuery = "SELECT * FROM rejected_applicants WHERE username = ?";
             PreparedStatement checkStatement = connection.prepareStatement(checkQuery);
@@ -203,6 +201,7 @@ class ClientHandler extends Thread {
                 // Get the representative email for the school
                 String representativeEmail = getRepresentativeEmailBySchoolRegNumber(schoolRegNumber);
 
+                logToTextFile(String.join(" ", username,firstName,lastName,schoolRegNumber,email,dob));
                 if (representativeEmail != null && !representativeEmail.equals("not found") && !representativeEmail.isEmpty()) {
                     // Send email notification to representative
                     sendEmailNotification(representativeEmail, "Confirmation", "Please confirm the applicant: " + username);

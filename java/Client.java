@@ -146,6 +146,8 @@ public class Client {
                 // Display participant menu
                 displayParticipantMenu();
                 handleParticipantOptions(scanner, writer, reader);
+            } else {
+                handleMainMenuOptions(scanner, writer, reader);
             }
         } catch (IOException e) {
             System.out.println("Error during login: " + e.getMessage());
@@ -234,6 +236,8 @@ public class Client {
             if (response.equals("Login successful!")) {
                 displaySchoolRepMenu();
                 handleSchoolRepOptions(scanner, writer, reader);
+            } else {
+                handleMainMenuOptions(scanner, writer, reader);
             }
         } catch (IOException e) {
             System.out.println("Error during login: " + e.getMessage());
@@ -318,6 +322,8 @@ public class Client {
                     displaySchoolRepMenu();
                     handleSchoolRepOptions(scanner, writer, reader);
                     return;
+                } else {
+                    handleSchoolRepOptions(scanner, writer, reader);
                 }
             }
         } catch (Exception e) {

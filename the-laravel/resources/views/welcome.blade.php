@@ -10,8 +10,15 @@
         style="background-image: url('myImage.jpg');">
         <span class="mask bg-gradient-dark opacity-6"></span>
         <div class="container">
-            <h1 class="text-light text-center">Welcome to the Math Quest Challenge System.</h1>
+            <div class="row justify-content-center">
+                <div class="col-lg-6 col-md-8 col-sm-10 text-center">
+                    <h1 class="text-light">Welcome to the Math Quest Challenge System</h1>
+                    <p class="text-light mt-3">The journey to conquering math starts here. Register or log in to get started!</p>
+                    <a href="{{ route('register') }}" class="btn btn-primary btn-lg mt-3">Register</a>
+                    <a href="{{ route('login') }}" class="btn btn-secondary btn-lg mt-3">Log In</a>
+                </div>
+            </div>
         </div>
     </div>
-        <x-footers.guest></x-footers.guest>
+    <x-footers.guest></x-footers.guest>
 </x-layout>

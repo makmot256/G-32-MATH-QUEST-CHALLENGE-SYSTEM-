@@ -114,7 +114,7 @@
                         </div>
                         <div class="card-body">
                             <h6 class="mb-0 ">Most Correctly Answered Questions</h6>
-                            <p class="text-sm ">Accross the week</p>
+                            <p class="text-sm ">Across the week</p>
                             <hr class="dark horizontal">
                             <div class="d-flex ">
                                 <i class="material-icons text-sm my-auto me-1">schedule</i>
@@ -134,7 +134,7 @@
                         </div>
                         <div class="card-body">
                             <h6 class="mb-0 "> Performance of Schools and Participants over the years and time</h6>
-                            <p class="text-sm "> <span class="font-weight-bolder"></span> Perfomance over yearss
+                            <p class="text-sm "> <span class="font-weight-bolder"></span> Perfomance over years
                                 </p>
                             <hr class="dark horizontal">
                             <div class="d-flex ">

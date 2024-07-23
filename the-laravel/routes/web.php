@@ -1,4 +1,6 @@
 <?php
+
+use App\Http\Controllers\AnalyticsController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\ProfileController;
@@ -22,9 +24,7 @@ Route::get('/', function () {
 })->name('welcome');
 
 
-Route::get('/welcome', function () {
-    return view('welcome');
-})->middleware('guest')->name('welcome');
+Route::get('/', [DashboardController::class, 'index'])->middleware('guest')->name('guest');
 
 Route::get('/dashboard', [DashboardController::class, 'index'])->middleware('auth')->name('dashboard');
 Route::get('sign-up', [RegisterController::class, 'create'])->middleware('guest')->name('register');

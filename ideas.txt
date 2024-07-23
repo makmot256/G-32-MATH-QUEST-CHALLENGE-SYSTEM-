@@ -1,0 +1,27 @@
+"If a challenge is to consist of 10 questions, 100 questions should be uploaded such that for each
+attempt, the 10 questions are selected randomly from the 100 questions."
+- Should challenge have questions stored in an array or have a reference to them through foreign key(is sorted out)
+
+"At the close of the challenge, a report of answers for all attempted questions
+are sent to all participants and the first two winners are recognized on the website. Each participant is
+automatically sent an email providing them a PDF report of the report of right answers."
+- should be triggered immediately the user clicks exit
+
+"To reject or activate an applicant, the representative enters a menu item confirm
+yes/no username. If one is rejected, they are deleted from the file and moved into a database table rejected
+while those that are accepted are deleted from the file and inserted into the participant table in the database.
+An email notification is sent for all cases. If one tries to register again under the same school after being
+rejected, they are informed on the command line interface and denied from registering under the school."
+-necessitating an applicants table then moving confirmed into the participants table
+
+
+    // query the many-to-many relationship between challenge and question pivot table and use it to display the questions in each challenge (done)
+    // checking rejected_applicants table when student tries to register(done)
+    // add details/description of each challenge
+    // record every attempt per question and stop attempts after the maximum of 3
+    //  The questions will be presented one by one and each time a question is presented, the number of remaining questions and time are indicated above the question
+    // we need to implement a timer
+    // wrong answer = -3 marks , not sure = 0 marks , correct answer = marks originally assigned(necessitate a marks column on each question)
+    // can use a pivot table to track attempts(participant_attempts)
+    //  When the time for attempting the question expires, the participant challenge is closed and the participant is given their score and report.
+    // generate report for each participant on close and esepcialy when duration closes. can put it in a dunction that shows scores,time taken for each question and total time for the whole challenge

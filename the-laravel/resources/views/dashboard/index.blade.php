@@ -22,7 +22,7 @@
                                 </h4>
                                 <br>
                                 <h5 class="mb-0">
-                                    Providing the best Challenges for Primary School Students
+                                    Providing the best Challenges for Primary School Pupils.
                                 </h5>
                             </div>
                         </div>
@@ -30,7 +30,7 @@
 
                         <hr class="dark horizontal my-0">
                         <div class="card-footer p-3">
-                            <p class="mb-0"><span class="text-success text-sm font-weight-bolder">THE BEST CHALLENGES   </span>to keep your child off the phone.
+                            <p class="mb-0"><span class="text-success text-sm font-weight-bolder">THE BEST CHALLENGES   </span>to keep your child mentally alert.
                             </p>
                         </div>
                     </div>
@@ -73,6 +73,7 @@
                         </div>
                         <hr class="dark horizontal my-0">
                         <div class="card-footer p-3">
+                            <p class="mb-0"><span class="text-danger text-sm font-weight-bolder"></span>All participants get a certificate</p>
                             <p class="mb-0"><span class="text-danger text-sm font-weight-bolder"></span>All participants get a certificate</p>
                         </div>
                     </div>
@@ -880,6 +881,3 @@
 <!-- LOCATION -->
 <!-- ####### -->
 <!--  -->
-
-
-

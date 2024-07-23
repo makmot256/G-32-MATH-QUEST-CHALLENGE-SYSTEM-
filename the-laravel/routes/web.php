@@ -19,7 +19,14 @@ use App\Http\Controllers\ChallengeController;
 | be assigned to the "web" middleware group. Make something great!
 |
 */
-Route::get('/', [AnalyticsController::class, 'index'])->name('index');
+Route::get('/', function () {
+    return view('welcome');
+})->name('welcome');
+
+
+Route::get('/welcome', function () {
+    return view('welcome');
+})->middleware('guest')->name('welcome');
 
 Route::get('/dashboard', [DashboardController::class, 'index'])->middleware('auth')->name('dashboard');
 Route::get('sign-up', [RegisterController::class, 'create'])->middleware('guest')->name('register');
@@ -42,19 +49,14 @@ Route::post('user-profile', [ProfileController::class, 'update'])->middleware('a
 
 
 Route::group(['middleware' => 'auth'], function () {
-    
-
     Route::get('/challenges', [ChallengeController::class, 'index'])->name('challenges');
     Route::post('/challenges', [ChallengeController::class, 'store']);
-
-    //Route::get('schools', [SchoolController::class, 'index'])->name('schools');
-    //Route::post('schools', [SchoolController::class, 'store']);
 
     Route::get('upload', function () {
         return view('pages.upload');
     })->name('upload');
-    
-    Route::post('/upload', [ChallengeController::class, 'upload'])->name('upload');
+
+    Route::post('/upload', [ChallengeController::class, 'upload'])->name('upload.uploadFile');
 
     Route::get('notifications', function () {
         return view('pages.notifications');
@@ -62,18 +64,22 @@ Route::group(['middleware' => 'auth'], function () {
     
     Route::get('/schools', [SchoolController::class, 'index'])->name('schools');
     Route::post('/schools', [SchoolController::class, 'store'])->name('schools.store');
-
+    
+;
 
 
     Route::get('static-sign-in', function () {
         return view('pages.static-sign-in');
     })->name('static-sign-in');
+
     Route::get('static-sign-up', function () {
         return view('pages.static-sign-up');
     })->name('static-sign-up');
+
     Route::get('user-management', function () {
         return view('pages.laravel-examples.user-management');
     })->name('user-management');
+
     Route::get('user-profile', function () {
         return view('pages.laravel-examples.user-profile');
     })->name('user-profile');

@@ -18,8 +18,9 @@ use App\Http\Controllers\ChallengeController;
 |
 */
 Route::get('/', function () {
-    return redirect()->route('welcome');
-});
+    return view('welcome');
+})->name('welcome');
+
 
 Route::get('/welcome', function () {
     return view('welcome');
@@ -76,5 +77,3 @@ Route::group(['middleware' => 'auth'], function () {
         return view('pages.laravel-examples.user-profile');
     })->name('user-profile');
 });
-
-

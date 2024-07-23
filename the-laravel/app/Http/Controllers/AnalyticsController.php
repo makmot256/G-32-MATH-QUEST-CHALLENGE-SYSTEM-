@@ -87,7 +87,7 @@ class AnalyticsController extends Controller
             ->groupBy('participants.id', 'participants.username')
             ->get();
 
-        return view('welcome',[
+        return view('dashboard.index',[
             'mostCorrectlyAnsweredQuestions' => $mostCorrectlyAnsweredQuestions,
             'schoolRankings' => $schoolRankings,
             'performanceOverTime' => $performanceOverTime,

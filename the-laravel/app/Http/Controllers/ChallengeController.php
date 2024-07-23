@@ -5,6 +5,7 @@ use App\Imports\AnswerImport;
 use App\Imports\QuestionImport;
 use Illuminate\Http\Request;
 use App\Models\Challenge;
+use App\Models\Question;
 use Maatwebsite\Excel\Facades\Excel;
 use Illuminate\Support\Facades\Log;
 
@@ -62,6 +63,8 @@ class ChallengeController extends Controller
                 Excel::import(new AnswerImport, $request->file('fileInputAnswers'));
             }
 
+            $this->syncQuestionsWithChallenges();
+
             Log::info('Files uploaded successfully');
             return redirect()->route('upload')->with('success', 'Files uploaded successfully.');
         } catch (\Exception $e) {
@@ -70,5 +73,15 @@ class ChallengeController extends Controller
         }
     }
 
+    private function syncQuestionsWithChallenges()
+    {
+        $challenges = Challenge::all();
+
+        foreach ($challenges as $challenge) {
+            $numQuestions = $challenge->num_questions;
+            $questions = Question::inRandomOrder()->take($numQuestions)->pluck('id');
+            $challenge->questions()->sync($questions);
+        }
+    }
 
 }

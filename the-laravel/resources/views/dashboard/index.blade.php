@@ -22,7 +22,7 @@
                                 </h4>
                                 <br>
                                 <h5 class="mb-0">
-                                    Providing the best Challenges for Primary School Pupils.
+                                    Providing the best Challenges for Primary School Students
                                 </h5>
                             </div>
                         </div>
@@ -30,7 +30,7 @@
 
                         <hr class="dark horizontal my-0">
                         <div class="card-footer p-3">
-                            <p class="mb-0"><span class="text-success text-sm font-weight-bolder">THE BEST CHALLENGES   </span>to keep your child mentally alert.
+                            <p class="mb-0"><span class="text-success text-sm font-weight-bolder">THE BEST CHALLENGES   </span>to keep your child off the phone.
                             </p>
                         </div>
                     </div>
@@ -74,7 +74,6 @@
                         <hr class="dark horizontal my-0">
                         <div class="card-footer p-3">
                             <p class="mb-0"><span class="text-danger text-sm font-weight-bolder"></span>All participants get a certificate</p>
-                            <p class="mb-0"><span class="text-danger text-sm font-weight-bolder"></span>All participants get a certificate</p>
                         </div>
                     </div>
                 </div>
@@ -104,7 +103,7 @@
 
 </div>
             <div class="row mt-4 mb-4">
-                <div class="col-lg-4 col-md-6 mt-4 mb-4">
+                <div class="col-lg-6 col-md-6 mt-4 mb-4">
                     <div class="card z-index-2 ">
                         <div class="card-header p-0 position-relative mt-n4 mx-3 z-index-2 bg-transparent">
                             <div class="bg-gradient-primary shadow-primary border-radius-lg py-3 pe-1">
@@ -124,7 +123,7 @@
                         </div>
                     </div>
                 </div>
-                <div class="col-lg-4 col-md-6 mt-4 mb-4">
+                <div class="col-lg-6 col-md-6 mt-4 mb-4">
                     <div class="card z-index-2  ">
                         <div class="card-header p-0 position-relative mt-n4 mx-3 z-index-2 bg-transparent">
                             <div class="bg-gradient-success shadow-success border-radius-lg py-3 pe-1">
@@ -145,7 +144,7 @@
                         </div>
                     </div>
                 </div>
-                <div class="col-lg-4 mt-4 mb-3">
+                <div class="col-lg-5 mt-4 mb-3">
                     <div class="card z-index-2 ">
                         <div class="card-header p-0 position-relative mt-n4 mx-3 z-index-2 bg-transparent">
                             <div class="bg-gradient-dark shadow-dark border-radius-lg py-3 pe-1">
@@ -157,12 +156,34 @@
                         <div class="card-body">
                             <h6 class="mb-0 ">School Rankings</h6>
                             <td>
-                            <li>Seeta Junior School</li>
-                            <li>Kabojja Junior School</li>
-                            <li>City Parents School</li>
-                            <li>Kabojja Junior School</li>
-                            <li>City Parents School</li>
-                            <li>Kabojja Junior School</li>
+                                @foreach($schoolRankings as $school)
+                                <li>{{$school->name}}</li>
+                                @endforeach
+                            </td>
+                            <p class="text-sm ">Qualify for certificate</p>
+                            <hr class="dark horizontal">
+                            <div class="d-flex ">
+                                <i class="material-icons text-sm my-auto me-1">schedule</i>
+                                <p class="mb-0 text-sm">Just Updated</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-7 mt-4 mb-3">
+                    <div class="card z-index-2 ">
+                        <div class="card-header p-0 position-relative mt-n4 mx-3 z-index-2 bg-transparent">
+                            <div class="bg-gradient-dark shadow-dark border-radius-lg py-3 pe-1">
+                                <div class="chart">
+                                    <!-- <canvas id="chart-line-tasks" class="chart-canvas" height="170"></canvas> -->
+                                </div>
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            <h6 class="mb-0 ">Top Performers</h6>
+                            <td>
+                                @foreach($bestPerformingSchools as $bestSchool)
+                                <li>{{$bestSchool->name}}</li>
+                                @endforeach
                             </td>
                             <p class="text-sm ">Qualify for certificate</p>
                             <hr class="dark horizontal">
@@ -192,11 +213,11 @@
                         <div class="card-body">
                             <h6 class="mb-0 ">Worst Performing Schools</h6>
                             <ol>
-                            <li>Seeta Junior School</li>
-                            <li>Kabojja Junior School</li>
-                            <li>City Parents School</li>
-                            <li>Kabojja Junior School</li>
-                            <li>City Parents School</li>
+                                @foreach($worstPerformingSchools as $worstSchools)
+                                    @foreach($worstSchools as $worst)
+                                        <li>{{$worst->name}}</li>
+                                    @endforeach
+                                @endforeach
                             </ol>
                             <p class="text-sm ">For a given challenge</p>
                             <hr class="dark horizontal">
@@ -219,11 +240,9 @@
                         <div class="card-body">
                             <h6 class="mb-0 ">Best Performing Schools </h6>
                             <ol>
-                            <li>Seeta Junior School</li>
-                            <li>Kabojja Junior School</li>
-                            <li>City Parents School</li>
-                            <li>Kabojja Junior School</li>
-                            <li>City Parents School</li>
+                                @foreach($bestPerformingSchools as $bestSchool)
+                                    <li>{{$bestSchool->name}}</li>
+                                @endforeach
                             </ol>
                              <p class="text-sm "><span class="font-weight-bolder"></span>Best performing schools for all challenges
                                 </p>
@@ -247,11 +266,9 @@
                         <div class="card-body">
                             <h6 class="mb-0 ">Incomplete Challenges</h6>
                             <ol>
-                            <li>Seeta Junior School</li>
-                            <li>Kabojja Junior School</li>
-                            <li>City Parents School</li>
-                            <li>Kabojja Junior School</li>
-                            <li>City Parents School</li>
+                                @foreach($incompleteChallenges as $incomplete)
+                                    <li>{{$incomplete->name}}</li>
+                                @endforeach
                             </ol>
                             <p class="text-sm ">Check for incomplete challenge above</p>
                             <hr class="dark horizontal">
@@ -623,12 +640,15 @@
     @push('js')
     <script src="{{ asset('assets') }}/js/plugins/chartjs.min.js"></script>
     <script>
+        var attemptedChallenges = @json($attemptedChallenges);
+        var yearlyChallenges = @json($yearlyChallenges);
+        var monthlyChallenges = @json($monthlyChallenges);
         var ctx = document.getElementById("chart-bars").getContext("2d");
-
+    
         new Chart(ctx, {
             type: "bar",
             data: {
-                labels: ["M", "T", "W", "T", "F", "S", "S"],
+                labels: ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'], // Days of the month
                 datasets: [{
                     label: "Attempted Challenges",
                     tension: 0.4,
@@ -636,9 +656,9 @@
                     borderRadius: 4,
                     borderSkipped: false,
                     backgroundColor: "rgba(255, 255, 255, .8)",
-                    data: [50, 20, 10, 22, 50, 10, 40],
+                    data: Object.values(attemptedChallenges), // Counts
                     maxBarThickness: 6
-                }, ],
+                }],
             },
             options: {
                 responsive: true,
@@ -702,14 +722,13 @@
                 },
             },
         });
-
-
+    
         var ctx2 = document.getElementById("chart-line").getContext("2d");
-
+    
         new Chart(ctx2, {
             type: "line",
             data: {
-                labels: ["2010", "2011", "2012", "2013", "2014", "2015", "2016", "2017", "2018"],
+                labels: [Object.keys(yearlyChallenges)], // Years
                 datasets: [{
                     label: "Daily Challenges",
                     tension: 0,
@@ -718,13 +737,11 @@
                     pointBackgroundColor: "rgba(255, 255, 255, .8)",
                     pointBorderColor: "transparent",
                     borderColor: "rgba(255, 255, 255, .8)",
-                    borderColor: "rgba(255, 255, 255, .8)",
                     borderWidth: 4,
                     backgroundColor: "transparent",
                     fill: true,
-                    data: [50, 40, 300, 320, 500, 350, 200, 230, 500],
+                    data: Object.values(yearlyChallenges), // Counts
                     maxBarThickness: 6
-
                 }],
             },
             options: {
@@ -786,13 +803,13 @@
                 },
             },
         });
-
+    
         var ctx3 = document.getElementById("chart-line-tasks").getContext("2d");
-
+    
         new Chart(ctx3, {
             type: "line",
             data: {
-                labels: ["Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"],
+                labels: ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"], // Months
                 datasets: [{
                     label: "Completed Challenges",
                     tension: 0,
@@ -804,9 +821,8 @@
                     borderWidth: 4,
                     backgroundColor: "transparent",
                     fill: true,
-                    data: [50, 40, 300, 220, 500, 250, 400, 230, 500],
+                    data: Object.values(monthlyChallenges), // Counts
                     maxBarThickness: 6
-
                 }],
             },
             options: {
@@ -868,8 +884,8 @@
                 },
             },
         });
-
     </script>
+    
     @endpush
 </x-layout>
 
@@ -881,3 +897,6 @@
 <!-- LOCATION -->
 <!-- ####### -->
 <!--  -->
+
+
+

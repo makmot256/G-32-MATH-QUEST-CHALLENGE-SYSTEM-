@@ -12,4 +12,9 @@ class Question extends Model
     protected $table = 'questions';
 
     protected $fillable = ['question_text','answer','marks'];
+    
+    public function challenges()
+    {
+        return $this->belongsToMany(Challenge::class, 'challenge_questions');
+    }
 }

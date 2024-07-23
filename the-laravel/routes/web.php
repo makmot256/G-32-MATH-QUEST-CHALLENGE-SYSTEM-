@@ -1,6 +1,4 @@
 <?php
-
-use App\Http\Controllers\AnalyticsController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\ProfileController;
@@ -45,8 +43,6 @@ Route::get('/reset-password/{token}', function ($token) {
 Route::post('sign-out', [SessionsController::class, 'destroy'])->middleware('auth')->name('logout');
 Route::get('profile', [ProfileController::class, 'create'])->middleware('auth')->name('profile');
 Route::post('user-profile', [ProfileController::class, 'update'])->middleware('auth');
-// Route::get('/analytics', [AnalyticsController::class, 'index'])->name('analytics.index');
-
 
 Route::group(['middleware' => 'auth'], function () {
     Route::get('/challenges', [ChallengeController::class, 'index'])->name('challenges');
@@ -64,9 +60,6 @@ Route::group(['middleware' => 'auth'], function () {
     
     Route::get('/schools', [SchoolController::class, 'index'])->name('schools');
     Route::post('/schools', [SchoolController::class, 'store'])->name('schools.store');
-    
-;
-
 
     Route::get('static-sign-in', function () {
         return view('pages.static-sign-in');

@@ -18,8 +18,8 @@ use App\Http\Controllers\ChallengeController;
 |
 */
 Route::get('/', function () {
-    return redirect()->route('welcome');
-});
+    return view('welcome');
+})->name('welcome');
 
 Route::get('/welcome', function () {
     return view('welcome');

@@ -107,7 +107,7 @@
             <th>End Date</th>
             <th>Duration (minutes)</th>
             <th>Number of Questions</th>
-            <th>Status</th>
+           
         </tr>
     </thead>
     <tbody>
@@ -118,7 +118,6 @@
                 <td>{{ $challenge->end_date }}</td>
                 <td>{{ $challenge->duration }}</td>
                 <td>{{ $challenge->num_questions }}</td>
-                <td class="status-{{ $challenge->status }}">{{ ucfirst($challenge->status) }}</td>
             </tr>
         @endforeach
     </tbody>

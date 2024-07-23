@@ -48,12 +48,12 @@
                             </div>
                             <div class="text-end pt-1">
                                 <p class="text-sm mb-0 text-capitalize">SCHOLARSHIPS</p>
-                                <h4 class="mb-0">About 200+</h4>
+                                <h4 class="mb-0">About 200+ available</h4>
                             </div>
                         </div>
                         <hr class="dark horizontal my-0">
                         <div class="card-footer p-3">
-                            <p class="mb-0"><span class="text-success text-sm font-weight-bolder"></span> Best 3 get a scholarship</p>
+                            <p class="mb-0"><span class="text-success text-sm font-weight-bolder"></span> Best 3 participants get a scholarship!</p>
                         </div>
                     </div>
                 </div>
@@ -73,7 +73,7 @@
                         </div>
                         <hr class="dark horizontal my-0">
                         <div class="card-footer p-3">
-                            <p class="mb-0"><span class="text-danger text-sm font-weight-bolder"></span>All particpants get a certificate</p>
+                            <p class="mb-0"><span class="text-danger text-sm font-weight-bolder"></span>All participants get a certificate</p>
                         </div>
                     </div>
                 </div>
@@ -114,7 +114,7 @@
                         </div>
                         <div class="card-body">
                             <h6 class="mb-0 ">Most Correctly Answered Questions</h6>
-                            <p class="text-sm ">Accross the week</p>
+                            <p class="text-sm ">Across the week</p>
                             <hr class="dark horizontal">
                             <div class="d-flex ">
                                 <i class="material-icons text-sm my-auto me-1">schedule</i>
@@ -133,13 +133,13 @@
                             </div>
                         </div>
                         <div class="card-body">
-                            <h6 class="mb-0 "> Performance of Schools and Participants over the years and time</h6>
-                            <p class="text-sm "> <span class="font-weight-bolder"></span> Perfomance over yearss
+                            <h6 class="mb-0 "> Performance of Schools and Participants over the years</h6>
+                            <p class="text-sm "> <span class="font-weight-bolder"></span> Performance over years
                                 </p>
                             <hr class="dark horizontal">
                             <div class="d-flex ">
                                 <i class="material-icons text-sm my-auto me-1">schedule</i>
-                                <p class="mb-0 text-sm"> updated 4 min ago </p>
+                                <p class="mb-0 text-sm"> Updated 4 min ago </p>
                             </div>
                         </div>
                     </div>
@@ -167,7 +167,7 @@
                             <hr class="dark horizontal">
                             <div class="d-flex ">
                                 <i class="material-icons text-sm my-auto me-1">schedule</i>
-                                <p class="mb-0 text-sm">just updated</p>
+                                <p class="mb-0 text-sm">Just Updated</p>
                             </div>
                         </div>
                     </div>
@@ -229,7 +229,7 @@
                             <hr class="dark horizontal">
                             <div class="d-flex ">
                                 <i class="material-icons text-sm my-auto me-1">schedule</i>
-                                <p class="mb-0 text-sm"> updated 4 min ago </p>
+                                <p class="mb-0 text-sm"> Updated 4 min ago </p>
                             </div>
                         </div>
                     </div>
@@ -256,7 +256,7 @@
                             <hr class="dark horizontal">
                             <div class="d-flex ">
                                 <i class="material-icons text-sm my-auto me-1">schedule</i>
-                                <p class="mb-0 text-sm">just updated</p>
+                                <p class="mb-0 text-sm">Just Updated</p>
                             </div>
                         </div>
                     </div>

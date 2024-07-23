@@ -1,4 +1,4 @@
-<?php
+<?php 
 
 namespace App\Http\Controllers;
 
@@ -14,6 +14,10 @@ class AnalyticsController extends Controller
 {
     public function index()
     {
+        if (auth()->check()) {
+            // If the user is authenticated, redirect to the sign-in page
+            return redirect()->route('sign-in');
+        }
         // Most Correctly Answered Questions
         $mostCorrectlyAnsweredQuestions = DB::table('participant_attempts')
             ->select('question_id', DB::raw('COUNT(*) as correct_answers'))
@@ -40,9 +44,9 @@ class AnalyticsController extends Controller
             ->get();
 
         // Percentage Repetition of Questions
-        $repeatedQuestions = Participant::select('participants.id', 'participants.username', DB::raw('COUNT(DISTINCT question_id) as total_questions'), DB::raw('COUNT(question_id) as total_attempts'))
+        $repeatedQuestions = Participant::select('participants.username', DB::raw('COUNT(DISTINCT question_id) as total_questions'), DB::raw('COUNT(question_id) as total_attempts'))
             ->join('participant_attempts', 'participants.id', '=', 'participant_attempts.participant_id')
-            ->groupBy('participants.id')
+            ->groupBy('participants.id', 'participants.username')
             ->get()
             ->map(function ($participant) {
                 $participant->repetition_percentage = ($participant->total_attempts - $participant->total_questions) / $participant->total_attempts * 100;
@@ -50,10 +54,11 @@ class AnalyticsController extends Controller
             });
 
         // Worst Performing Schools for a Given Challenge
+        $worstPerformingSchools = [];
         $challenges = Challenge::all();
         foreach($challenges as $challenge) {
             $challengeId = $challenge->id;
-            $worstPerformingSchools = School::select('schools.name', DB::raw('AVG(participant_attempts.is_correct) as avg_score'))
+            $challengeWorstPerformingSchools = School::select('schools.name', DB::raw('AVG(participant_attempts.is_correct) as avg_score'))
                 ->join('participants', 'schools.school_registration_number', '=', 'participants.school_registration_number')
                 ->join('participant_attempts', 'participants.id', '=', 'participant_attempts.participant_id')
                 ->where('participant_attempts.challenge_id', $challengeId)
@@ -61,6 +66,8 @@ class AnalyticsController extends Controller
                 ->orderBy('avg_score', 'ASC')
                 ->take(10)
                 ->get();
+            
+            $worstPerformingSchools[$challenge->name] = $challengeWorstPerformingSchools;
         }
 
         // Best Performing Schools for All Challenges
@@ -77,17 +84,17 @@ class AnalyticsController extends Controller
             ->join('participant_attempts', 'participants.id', '=', 'participant_attempts.participant_id')
             ->join('challenges', 'participant_attempts.challenge_id', '=', 'challenges.id')
             ->whereNull('participant_attempts.attempt_number')
-            ->groupBy('participants.id')
+            ->groupBy('participants.id', 'participants.username')
             ->get();
 
-        return view('guest', compact(
-            'mostCorrectlyAnsweredQuestions',
-            'schoolRankings',
-            'performanceOverTime',
-            'repeatedQuestions',
-            'worstPerformingSchools',
-            'bestPerformingSchools',
-            'incompleteChallenges'
-        ));
+        return view('welcome',[
+            'mostCorrectlyAnsweredQuestions' => $mostCorrectlyAnsweredQuestions,
+            'schoolRankings' => $schoolRankings,
+            'performanceOverTime' => $performanceOverTime,
+            'repeatedQuestions' => $repeatedQuestions,
+            'worstPerformingSchools' => $worstPerformingSchools,
+            'bestPerformingSchools' => $bestPerformingSchools,
+            'incompleteChallenges' => $incompleteChallenges
+        ]);
     }
 }

@@ -19,10 +19,7 @@ use App\Http\Controllers\ChallengeController;
 | be assigned to the "web" middleware group. Make something great!
 |
 */
-
-Route::get('/', function () {
-    return redirect('sign-in');
-})->middleware('guest');
+Route::get('/', [AnalyticsController::class, 'index'])->name('index');
 
 Route::get('/dashboard', [DashboardController::class, 'index'])->middleware('auth')->name('dashboard');
 Route::get('sign-up', [RegisterController::class, 'create'])->middleware('guest')->name('register');
@@ -41,7 +38,7 @@ Route::get('/reset-password/{token}', function ($token) {
 Route::post('sign-out', [SessionsController::class, 'destroy'])->middleware('auth')->name('logout');
 Route::get('profile', [ProfileController::class, 'create'])->middleware('auth')->name('profile');
 Route::post('user-profile', [ProfileController::class, 'update'])->middleware('auth');
-Route::get('/analytics', [AnalyticsController::class, 'index'])->name('analytics.index');
+// Route::get('/analytics', [AnalyticsController::class, 'index'])->name('analytics.index');
 
 
 Route::group(['middleware' => 'auth'], function () {

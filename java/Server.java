@@ -384,7 +384,7 @@ class ClientHandler extends Thread {
                 int duration = resultSet.getInt("duration");
                 String description = resultSet.getString("description");
                 int numQuestions = resultSet.getInt("num_questions");
-    
+                
                 writer.println("Challenge ID: " + id);
                 writer.println("Name: " + name);
                 writer.println("Description: " + description);

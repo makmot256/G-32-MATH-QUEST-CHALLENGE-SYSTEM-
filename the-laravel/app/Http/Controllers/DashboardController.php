@@ -38,23 +38,33 @@ class DashboardController extends Controller
             ->get();
 
         // Challenges done per school
-        $challengesDonePerSchool = Participant::select(
-            'participants.username',
-            'schools.name as school_name',
-            DB::raw('COUNT(DISTINCT question_id) as total_questions'),
-            DB::raw('COUNT(question_id) as total_attempts'),
-            DB::raw('SUM(challenges.num_questions) as total_challenge_questions')
-        )
-        ->join('participant_attempts', 'participants.id', '=', 'participant_attempts.participant_id')
-        ->join('challenges', 'participant_attempts.challenge_id', '=', 'challenges.id')
-        ->join('schools', 'participants.school_registration_number', '=', 'schools.school_registration_number')
-        ->groupBy('participants.id', 'participants.username', 'schools.name')
-        ->get()
-        ->map(function ($participant) {
-            $participant->repetition_percentage = ($participant->total_attempts - $participant->total_questions) / $participant->total_attempts * 100;
-            $participant->completion_percentage = ($participant->total_attempts / $participant->total_challenge_questions) * 100;
-            return $participant;
-        });
+        $challengesDonePerSchool = DB::table('participants')
+            ->select(
+                'participants.username',
+                'schools.name as school_name',
+                DB::raw('COUNT(DISTINCT participant_attempts.challenge_id) as total_challenges'),
+                DB::raw('COUNT(DISTINCT questions.id) as total_questions'),
+                DB::raw('SUM(challenges.num_questions) as total_challenge_questions')
+            )
+            ->join('participant_attempts', 'participants.id', '=', 'participant_attempts.participant_id')
+            ->join('challenges', 'participant_attempts.challenge_id', '=', 'challenges.id')
+            ->join('questions', 'participant_attempts.question_id', '=', 'questions.id')
+            ->join('schools', 'participants.school_registration_number', '=', 'schools.school_registration_number')
+            ->groupBy('participants.id', 'participants.username', 'schools.name')
+            ->get()
+            ->map(function ($participant) {
+                // same question is attempted more than once.
+                $participant->repetition_percentage = $participant->total_questions > 0 
+                    ? (($participant->total_questions - $participant->total_challenges) / $participant->total_questions) * 100 
+                    : 0;
+                
+                $participant->completion_percentage = $participant->total_challenges > 0 
+                    ? ($participant->total_questions/ $participant->total_challenge_questions) * 100 
+                    : 0;
+                
+                return $participant;
+            });
+
 
         // Worst Performing Schools for a Given Challenge
         $worstPerformingSchools = [];

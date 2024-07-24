@@ -366,23 +366,29 @@ public class Client {
      * @param  reader          the buffered reader object for receiving messages from the server
      * @throws IOException     if there is an error reading the server response
      */
-    private static void viewChallenges(Scanner scanner,PrintWriter writer, BufferedReader reader) {
+    private static void viewChallenges(Scanner scanner, PrintWriter writer, BufferedReader reader) {
         writer.println("viewChallenges");
         writer.flush();
-
+    
         try {
             String response;
-            while ((response = reader.readLine())!=null && !response.equals("END_OF_CHALLENGES")) {
-                System.out.println(response);
-                // return;
+            
+            while ((response = reader.readLine()) != null) {
+                if (response.equals("END_OF_CHALLENGES")) {
+                    break;
+                }
+                System.out.println(response); // Print the response from the server
             }
+            
+            // Process end-of-challenges and return to participant menu
             displayParticipantMenu();
             handleParticipantOptions(scanner, writer, reader);
+            
         } catch (IOException e) {
             System.out.println("Error reading response: " + e.getMessage());
         }
     }
-
+    
     /**
      * Confirms or rejects an applicant based on user input and server responses.
      *

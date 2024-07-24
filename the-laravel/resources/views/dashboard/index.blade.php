@@ -402,7 +402,7 @@
                                                 </div>
                                             </td>
                                             <td class="align-middle text-center text-sm">
-                                                <span class="text-xs font-weight-bold"> {{ $participant->total_attempts }} </span>
+                                                <span class="text-xs font-weight-bold"> {{ $participant->total_challenges }} </span>
                                             </td>
                                             <td class="align-middle">
                                                 <div class="progress-wrapper w-75 mx-auto">

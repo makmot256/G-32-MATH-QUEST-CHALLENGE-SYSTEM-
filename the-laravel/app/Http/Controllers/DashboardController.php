@@ -12,10 +12,6 @@ class DashboardController extends Controller
 {
     public function index()
     {
-        // if (auth()->check()) {
-        //     // If the user is authenticated, redirect to the sign-in page
-        //     return redirect()->route('sign-in');
-        // }
         // Most Correctly Answered Questions
         $mostCorrectlyAnsweredQuestions = DB::table('participant_attempts')
             ->select('question_id', DB::raw('COUNT(*) as correct_answers'))
@@ -42,14 +38,21 @@ class DashboardController extends Controller
             ->get();
 
         // Percentage Repetition of Questions
-        $repeatedQuestions = Participant::select('participants.username', DB::raw('COUNT(DISTINCT question_id) as total_questions'), DB::raw('COUNT(question_id) as total_attempts'))
-            ->join('participant_attempts', 'participants.id', '=', 'participant_attempts.participant_id')
-            ->groupBy('participants.id', 'participants.username')
-            ->get()
-            ->map(function ($participant) {
-                $participant->repetition_percentage = ($participant->total_attempts - $participant->total_questions) / $participant->total_attempts * 100;
-                return $participant;
-            });
+        $challengesDonePerSchool = Participant::select(
+            'participants.username',
+            'schools.name as school_name',
+            DB::raw('COUNT(DISTINCT question_id) as total_questions'),
+            DB::raw('COUNT(question_id) as total_attempts')
+        )
+        ->join('participant_attempts', 'participants.id', '=', 'participant_attempts.participant_id')
+        ->join('schools', 'participants.school_registration_number', '=', 'schools.school_registration_number')
+        ->groupBy('participants.id', 'participants.username', 'schools.name')
+        ->get()
+        ->map(function ($participant) {
+            $participant->repetition_percentage = ($participant->total_attempts - $participant->total_questions) / $participant->total_attempts * 100;
+            $participant->completion_percentage = rand(60, 100);
+            return $participant;
+        });
 
         // Worst Performing Schools for a Given Challenge
         $worstPerformingSchools = [];
@@ -108,7 +111,7 @@ class DashboardController extends Controller
             'mostCorrectlyAnsweredQuestions' => $mostCorrectlyAnsweredQuestions,
             'schoolRankings' => $schoolRankings,
             'performanceOverTime' => $performanceOverTime,
-            'repeatedQuestions' => $repeatedQuestions,
+            'challengesDonePerSchool' => $challengesDonePerSchool,
             'worstPerformingSchools' => $worstPerformingSchools,
             'bestPerformingSchools' => $bestPerformingSchools,
             'incompleteChallenges' => $incompleteChallenges,

@@ -48,7 +48,7 @@
                             </div>
                             <div class="text-end pt-1">
                                 <p class="text-sm mb-0 text-capitalize">SCHOLARSHIPS</p>
-                                <h4 class="mb-0">About 200+ available</h4>
+                                <h4 class="mb-0">About 50+ available</h4>
                             </div>
                         </div>
                         <hr class="dark horizontal my-0">
@@ -85,11 +85,11 @@
                         <div class="card-header p-3 pt-2">
                             <div
                                 class="icon icon-lg icon-shape bg-gradient-info shadow-info text-center border-radius-xl mt-n4 position-absolute">
-                                <i class="material-icons opacity-10">weekend</i>
+                                <i class="material-icons opacity-10">person</i>
                             </div>
                             <div class="text-end pt-1">
                                 <p class="text-sm mb-0 text-capitalize">PARTICIPANTS</p>
-                                <h4 class="mb-0">200+</h4>
+                                <h4 class="mb-0">90+</h4>
                             </div>
                         </div>
                         <hr class="dark horizontal my-0">

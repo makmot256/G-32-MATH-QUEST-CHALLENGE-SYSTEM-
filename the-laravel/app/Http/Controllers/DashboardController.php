@@ -37,20 +37,22 @@ class DashboardController extends Controller
             ->orderBy('year', 'ASC')
             ->get();
 
-        // Percentage Repetition of Questions
+        // Challenges done per school
         $challengesDonePerSchool = Participant::select(
             'participants.username',
             'schools.name as school_name',
             DB::raw('COUNT(DISTINCT question_id) as total_questions'),
-            DB::raw('COUNT(question_id) as total_attempts')
+            DB::raw('COUNT(question_id) as total_attempts'),
+            DB::raw('SUM(challenges.num_questions) as total_challenge_questions')
         )
         ->join('participant_attempts', 'participants.id', '=', 'participant_attempts.participant_id')
+        ->join('challenges', 'participant_attempts.challenge_id', '=', 'challenges.id')
         ->join('schools', 'participants.school_registration_number', '=', 'schools.school_registration_number')
         ->groupBy('participants.id', 'participants.username', 'schools.name')
         ->get()
         ->map(function ($participant) {
             $participant->repetition_percentage = ($participant->total_attempts - $participant->total_questions) / $participant->total_attempts * 100;
-            $participant->completion_percentage = rand(60, 100);
+            $participant->completion_percentage = ($participant->total_attempts / $participant->total_challenge_questions) * 100;
             return $participant;
         });
 
@@ -81,12 +83,19 @@ class DashboardController extends Controller
             ->get();
 
         // Participants with Incomplete Challenges
-        $incompleteChallenges = Participant::select('participants.username', DB::raw('COUNT(DISTINCT challenges.id) as incomplete_challenges'))
-            ->join('participant_attempts', 'participants.id', '=', 'participant_attempts.participant_id')
-            ->join('challenges', 'participant_attempts.challenge_id', '=', 'challenges.id')
-            ->whereNull('participant_attempts.attempt_number')
-            ->groupBy('participants.id', 'participants.username')
-            ->get();
+        $incompleteChallenges = Participant::select(
+            'participants.username',
+            'schools.name as school_name',
+            'challenges.num_questions', 
+            DB::raw('COUNT(participant_attempts.id) as attempts_made'),
+            DB::raw('COUNT(DISTINCT challenges.id) as incomplete_challenges')
+        )
+        ->join('schools', 'participants.school_registration_number', '=', 'schools.school_registration_number')
+        ->leftJoin('participant_attempts', 'participants.id', '=', 'participant_attempts.participant_id')
+        ->join('challenges', 'challenges.id', '=', 'participant_attempts.challenge_id')
+        ->groupBy('participants.id', 'participants.username', 'schools.name', 'challenges.num_questions')
+        ->havingRaw('attempts_made < num_questions')
+        ->get();
 
         // Fetching data for the bar chart
         $attemptedChallenges = DB::table('challenges')
@@ -106,6 +115,18 @@ class DashboardController extends Controller
             ->select(DB::raw('MONTH(created_at) as month'), DB::raw('COUNT(*) as count'))
             ->groupBy(DB::raw('MONTH(created_at)'))
             ->pluck('count', 'month');
+        
+        $topTwoWinners = Participant::select(
+                'participants.username',
+                'schools.name as school_name',
+                DB::raw('SUM(participant_attempts.score) as total_score')
+            )
+            ->join('participant_attempts', 'participants.id', '=', 'participant_attempts.participant_id')
+            ->join('schools', 'participants.school_registration_number', '=', 'schools.school_registration_number')
+            ->groupBy('participants.id', 'participants.username', 'schools.name')
+            ->orderBy('total_score', 'desc')
+            ->limit(2)
+            ->get();
 
         return view('dashboard.index',[
             'mostCorrectlyAnsweredQuestions' => $mostCorrectlyAnsweredQuestions,
@@ -117,7 +138,8 @@ class DashboardController extends Controller
             'incompleteChallenges' => $incompleteChallenges,
             'attemptedChallenges' => $attemptedChallenges,
             'yearlyChallenges' => $yearlyChallenges,
-            'monthlyChallenges' => $monthlyChallenges
+            'monthlyChallenges' => $monthlyChallenges,
+            'topTwoWinners' => $topTwoWinners
         ]);
     }
 }

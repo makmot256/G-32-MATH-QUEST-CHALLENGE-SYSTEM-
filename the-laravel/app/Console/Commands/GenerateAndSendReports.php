@@ -34,7 +34,7 @@ class GenerateAndSendReports extends Command
             $pdf->save($pdfPath);
 
             // Send the report via email
-            // Mail::to($participant->email)->send(new ReportMail($pdfPath));
+            Mail::to($participant->email)->send(new ReportMail($pdfPath));
         }
 
         $this->info('Reports generated and sent successfully.');

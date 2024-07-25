@@ -471,7 +471,7 @@ public class Client {
                 }else if(serverResponse.contains("Invalid command")){
                     System.out.println(" ");
                     break;
-                } else if (serverResponse.equals("-------------------------------------------------")) {
+                } else if (serverResponse.contains("Total Score: ")) {
                     break;
                 }
             }

@@ -669,12 +669,9 @@ class ClientHandler extends Thread {
                     break;
                 }
             }
-        
-            // Provide challenge summary after all questions are attempted
-            // generatePdfReport(username, challengeId, reportLines);
-            // writer.println("Challenge completed. Summary has been sent to your email: "+ getEmailForParticipant(username));
-            // sendEmailWithAttachment(getEmailForParticipant(username), "Challenge Report", "Here is your challenge report.", "reports/" + username + "_challenge_" + challengeId + ".pdf");
-            // Print the formatted report
+            
+            long totalTimeTakenSeconds = (System.currentTimeMillis() - startTime) / 1000;
+
              // Print table header
              writer.println("Question\t| Marks\t| Time Taken");
              writer.println("-----------------------------------");
@@ -683,6 +680,8 @@ class ClientHandler extends Thread {
                 writer.println(line);
             }
             writer.println("-------------------------------------------------");
+            writer.println("Total Time Taken: " + totalTimeTakenSeconds + " seconds");
+            writer.println("Total Score: " + totalScore);
             writer.flush();
             
         } catch (SQLException e) {

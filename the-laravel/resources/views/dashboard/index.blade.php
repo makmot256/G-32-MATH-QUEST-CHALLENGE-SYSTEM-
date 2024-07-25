@@ -449,23 +449,24 @@
     @push('js')
     <script src="{{ asset('assets') }}/js/plugins/chartjs.min.js"></script>
     <script>
-        var attemptedChallenges = @json($attemptedChallenges);
-        var yearlyChallenges = @json($yearlyChallenges);
-        var monthlyChallenges = @json($monthlyChallenges);
-        var ctx = document.getElementById("chart-bars").getContext("2d");
-    
-        new Chart(ctx, {
+        // Fetch performance data from the controller
+        var topQuestions = @json($topQuestions);
+        var yearlyPerformance = @json($yearlyPerformance);
+
+        // Daily Performance Chart
+        var ctxDaily = document.getElementById("chart-bars").getContext("2d");
+        new Chart(ctxDaily, {
             type: "bar",
             data: {
-                labels: ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'], // Days of the month
+                labels: Object.keys(topQuestions), // Days of the month
                 datasets: [{
-                    label: "Attempted Challenges",
+                    label: "Correct",
                     tension: 0.4,
                     borderWidth: 0,
                     borderRadius: 4,
                     borderSkipped: false,
                     backgroundColor: "rgba(255, 255, 255, .8)",
-                    data: Object.values(attemptedChallenges), // Counts
+                    data: Object.values(topQuestions), // Counts
                     maxBarThickness: 6
                 }],
             },
@@ -493,7 +494,7 @@
                         },
                         ticks: {
                             suggestedMin: 0,
-                            suggestedMax: 500,
+                            suggestedMax: 50, // Adjust this based on your data
                             beginAtZero: true,
                             padding: 10,
                             font: {
@@ -531,15 +532,15 @@
                 },
             },
         });
-    
-        var ctx2 = document.getElementById("chart-line").getContext("2d");
-    
-        new Chart(ctx2, {
+
+        // Yearly Performance Chart
+        var ctxYearly = document.getElementById("chart-line").getContext("2d");
+        new Chart(ctxYearly, {
             type: "line",
             data: {
-                labels: [Object.keys(yearlyChallenges)], // Years
+                labels: Object.keys(yearlyPerformance), // Years
                 datasets: [{
-                    label: "Daily Challenges",
+                    label: "Yearly Attempts",
                     tension: 0,
                     borderWidth: 0,
                     pointRadius: 5,
@@ -549,7 +550,7 @@
                     borderWidth: 4,
                     backgroundColor: "transparent",
                     fill: true,
-                    data: Object.values(yearlyChallenges), // Counts
+                    data: Object.values(yearlyPerformance), // Counts
                     maxBarThickness: 6
                 }],
             },

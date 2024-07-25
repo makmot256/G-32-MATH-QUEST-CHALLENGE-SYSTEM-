@@ -107,17 +107,17 @@ class DashboardController extends Controller
         ->havingRaw('attempts_made < num_questions')
         ->get();
 
-        // Fetching data for the bar chart
-        $attemptedChallenges = DB::table('challenges')
-            ->select(DB::raw('DAY(created_at) as day'), DB::raw('COUNT(*) as count'))
-            ->whereMonth('created_at', now()->month)
-            ->groupBy(DB::raw('DAY(created_at)'))
+        // Fetching data for the daily performance chart (Current Month)
+        $dailyPerformance = DB::table('participant_attempts')
+            ->select(DB::raw('DAY(attempt_date) as day'), DB::raw('COUNT(*) as count'))
+            ->whereMonth('attempt_date', now()->month)
+            ->groupBy(DB::raw('DAY(attempt_date)'))
             ->pluck('count', 'day');
 
-        // Fetching data for the line chart (Yearly)
-        $yearlyChallenges = DB::table('challenges')
-            ->select(DB::raw('YEAR(created_at) as year'), DB::raw('COUNT(*) as count'))
-            ->groupBy(DB::raw('YEAR(created_at)'))
+        // Fetching data for the yearly performance chart
+        $yearlyPerformance = DB::table('participant_attempts')
+            ->select(DB::raw('YEAR(attempt_date) as year'), DB::raw('COUNT(*) as count'))
+            ->groupBy(DB::raw('YEAR(attempt_date)'))
             ->pluck('count', 'year');
 
         // Fetching data for the monthly line chart
@@ -138,6 +138,17 @@ class DashboardController extends Controller
             ->limit(2)
             ->get();
 
+            $topQuestions = DB::table('participant_attempts')
+            ->join('questions', 'participant_attempts.question_id', '=', 'questions.id')
+            ->select('questions.question_text', DB::raw('COUNT(*) as correct_count'))
+            ->where('participant_attempts.is_correct', true)
+            ->groupBy('questions.question_text')
+            ->orderBy('correct_count', 'desc')
+            ->limit(10) // Get top 10 questions
+            ->pluck('correct_count', 'questions.question_text');
+        
+
+
         return view('dashboard.index',[
             'mostCorrectlyAnsweredQuestions' => $mostCorrectlyAnsweredQuestions,
             'schoolRankings' => $schoolRankings,
@@ -146,10 +157,11 @@ class DashboardController extends Controller
             'worstPerformingSchools' => $worstPerformingSchools,
             'bestPerformingSchools' => $bestPerformingSchools,
             'incompleteChallenges' => $incompleteChallenges,
-            'attemptedChallenges' => $attemptedChallenges,
-            'yearlyChallenges' => $yearlyChallenges,
+            'dailyPerformance' => $dailyPerformance,
+            'yearlyPerformance' => $yearlyPerformance,
             'monthlyChallenges' => $monthlyChallenges,
-            'topTwoWinners' => $topTwoWinners
+            'topTwoWinners' => $topTwoWinners,
+            'topQuestions' => $topQuestions
         ]);
     }
 }

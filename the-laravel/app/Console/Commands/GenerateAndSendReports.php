@@ -34,7 +34,7 @@ class GenerateAndSendReports extends Command
             $pdf->save($pdfPath);
 
             // Send the report via email
-            Mail::to($participant->email)->send(new ReportMail($pdfPath));
+            // Mail::to($participant->email)->send(new ReportMail($pdfPath));
         }
 
         $this->info('Reports generated and sent successfully.');
@@ -47,11 +47,9 @@ class GenerateAndSendReports extends Command
             ->join('questions', 'participant_attempts.question_id', '=', 'questions.id')
             ->join('participants', 'participant_attempts.participant_id', '=', 'participants.id')
             ->select(
-                'participants.email as participant_email',
-                'participants.firstname as participant_firstname',
-                'participants.lastname as participant_lastname',
+                'participants.*',
                 'challenges.name as challenge_name',
-                'questions.question_text as question_text',
+                'questions.*',
                 'participant_attempts.is_correct',
                 'participant_attempts.score',
                 'participant_attempts.time_taken'
@@ -59,7 +57,7 @@ class GenerateAndSendReports extends Command
             ->where('participant_attempts.participant_id', $participantId)
             ->get();
 
-        dd($reportData);
+        // dd($reportData);
         return $reportData;
     }
 

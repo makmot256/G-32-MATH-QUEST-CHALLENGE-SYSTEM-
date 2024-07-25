@@ -14,8 +14,7 @@
                                 <i class="material-icons opacity-10">weekend</i>
                             </div>
 
-                            <!-- Iam editing this div alone  -->
-                            <div class="text-start pt-6" class="row"  class="col-lg-div class="col-lg-15 col-md-6 mb-md-0 mb-4">
+                            <div class="text-start pt-6" class="row"  class="col-lg-div" class="col-lg-15 col-md-6 mb-md-0 mb-4">
                                 <p class="text-sm mb-0 text-capitalize"></p>
                                 <h4 class="mb-13">
                                     WELCOME TO THE MATH QUEST CHALLENGE
@@ -94,7 +93,7 @@
                         </div>
                         <hr class="dark horizontal my-0">
                         <div class="card-footer p-3">
-                            <p class="mb-0"><span class="text-success text-sm font-weight-bolder"></span>All Registered participants are eligible
+                            <p class="mb-0"><span class="text-success text-sm font-weight-bolder"></span>All registered participants are eligible
                                 </p>
                         </div>
                     </div>
@@ -376,9 +375,9 @@
                                             <th
                                                 class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">
                                                 Challenges Done</th>
-                                            <th
+                                            {{-- <th
                                                 class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">
-                                                Completion</th>
+                                                Completion</th> --}}
                                             <th
                                                 class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">
                                                 Repetition</th>
@@ -404,7 +403,7 @@
                                             <td class="align-middle text-center text-sm">
                                                 <span class="text-xs font-weight-bold"> {{ $participant->total_challenges }} </span>
                                             </td>
-                                            <td class="align-middle">
+                                            {{-- <td class="align-middle">
                                                 <div class="progress-wrapper w-75 mx-auto">
                                                     <div class="progress-info">
                                                         <div class="progress-percentage">
@@ -415,7 +414,7 @@
                                                         <div class="progress-bar bg-gradient-info" style="width: {{ $participant->completion_percentage }}%" role="progressbar" aria-valuenow="{{ $participant->completion_percentage }}" aria-valuemin="0" aria-valuemax="100"></div>
                                                     </div>
                                                 </div>
-                                            </td>
+                                            </td> --}}
                                             <td class="align-middle text-center text-sm">
                                                 <span class="text-xs font-weight-bold">{{ round($participant->repetition_percentage, 2) }}%</span>
                                             </td> 
@@ -453,12 +452,12 @@
         var topQuestions = @json($topQuestions);
         var yearlyPerformance = @json($yearlyPerformance);
 
-        // Daily Performance Chart
+        //Most correctly answered Chart
         var ctxDaily = document.getElementById("chart-bars").getContext("2d");
         new Chart(ctxDaily, {
             type: "bar",
             data: {
-                labels: Object.keys(topQuestions), // Days of the month
+                labels: Object.keys(topQuestions),
                 datasets: [{
                     label: "Correct",
                     tension: 0.4,
@@ -466,7 +465,7 @@
                     borderRadius: 4,
                     borderSkipped: false,
                     backgroundColor: "rgba(255, 255, 255, .8)",
-                    data: Object.values(topQuestions), // Counts
+                    data: Object.values(topQuestions),
                     maxBarThickness: 6
                 }],
             },

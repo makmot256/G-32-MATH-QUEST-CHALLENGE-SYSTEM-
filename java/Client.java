@@ -471,6 +471,8 @@ public class Client {
                 }else if(serverResponse.contains("Invalid command")){
                     System.out.println(" ");
                     break;
+                } else if (serverResponse.equals("-------------------------------------------------")) {
+                    break;
                 }
             }
             displayParticipantMenu();

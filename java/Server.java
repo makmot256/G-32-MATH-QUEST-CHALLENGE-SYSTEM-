@@ -606,7 +606,7 @@ class ClientHandler extends Thread {
             // Array to store per question data
             List<String> reportLines = new ArrayList<>();
             int totalScore = 0;
-        
+
             for (int i = 0; i < totalQuestions; i++) {
                 int questionId = questionIds.get(i);        
                 // Fetch question details using questionId
@@ -647,15 +647,17 @@ class ClientHandler extends Thread {
                     long timeTakenSeconds = (System.currentTimeMillis() - startTime) / 1000;
                     totalScore += (isCorrect ? marks : 0);
                     // Store question data
-                    String reportLine = "Question ID: " + questionId + "\n" +
-                                    "Question: " + questionText + "\n" +
-                                    "Your Answer: " + userAnswer + "\n" +
-                                    "Correct Answer: " + correctAnswer + "\n" +
-                                    "Correct: " + isCorrect + "\n" +
-                                    "Score: " + (isCorrect ? marks : 0) + "\n" +
-                                    "Time Taken: " + timeTakenSeconds + " seconds" +"\n" +
-                                    "Total Score: " + totalScore + "\n" +
-                                    "\n";
+                    // String reportLine = "Question ID: " + questionId + "\n" +
+                    //                 "Question: " + questionText + "\n" +
+                    //                 "Your Answer: " + userAnswer + "\n" +
+                    //                 "Correct Answer: " + correctAnswer + "\n" +
+                    //                 "Correct: " + isCorrect + "\n" +
+                    //                 "Score: " + (isCorrect ? marks : 0) + "\n" +
+                    //                 "Time Taken: " + timeTakenSeconds + " seconds" +"\n" +
+                    //                 "Total Score: " + totalScore + "\n" +
+                    //                 "\n";
+                    // reportLines.add(reportLine);
+                    String reportLine = String.format("%s\t| %d\t| %d seconds", questionText, totalScore, timeTakenSeconds);
                     reportLines.add(reportLine);
                 }
         
@@ -669,12 +671,21 @@ class ClientHandler extends Thread {
             }
         
             // Provide challenge summary after all questions are attempted
-            generatePdfReport(username, challengeId, reportLines);
-            writer.println("Challenge completed. Summary has been sent to your email: "+ getEmailForParticipant(username));
-            sendEmailWithAttachment(getEmailForParticipant(username), "Challenge Report", "Here is your challenge report.", "reports/" + username + "_challenge_" + challengeId + ".pdf");
+            // generatePdfReport(username, challengeId, reportLines);
+            // writer.println("Challenge completed. Summary has been sent to your email: "+ getEmailForParticipant(username));
+            // sendEmailWithAttachment(getEmailForParticipant(username), "Challenge Report", "Here is your challenge report.", "reports/" + username + "_challenge_" + challengeId + ".pdf");
+            // Print the formatted report
+             // Print table header
+             writer.println("Question\t| Marks\t| Time Taken");
+             writer.println("-----------------------------------");
+         
+            for (String line : reportLines) {
+                writer.println(line);
+            }
+            writer.println("-------------------------------------------------");
             writer.flush();
-        
-        } catch (SQLException | IOException | DocumentException | MessagingException e) {
+            
+        } catch (SQLException e) {
             e.printStackTrace();
             writer.println("Error during challenge attempt: " + e.getMessage());
         }

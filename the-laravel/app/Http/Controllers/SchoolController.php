@@ -3,7 +3,9 @@
 namespace App\Http\Controllers;
 
 use App\Models\School;
+use App\Models\SchoolRepresentative;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Hash;
 
 class SchoolController extends Controller
 {
@@ -24,6 +26,14 @@ class SchoolController extends Controller
         ]);
 
         School::create($request->all());
+        SchoolRepresentative::create([
+            'email' => $request->representative_email,
+            'firstname' => $request->representative_name,
+            'lastname' => $request->representative_name,
+            'username' => $request->representative_name,
+            'password' => $request->password,
+            'validated' => $request->validated ? true : false
+        ]);
         return redirect()->route('schools');
 
 

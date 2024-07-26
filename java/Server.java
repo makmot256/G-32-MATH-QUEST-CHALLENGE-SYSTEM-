@@ -718,7 +718,9 @@ class ClientHandler extends Thread {
 
         document.add(new Paragraph("Challenge Report for " + username));
         document.add(new Paragraph("Challenge ID: " + challengeId));
-        document.add(new Paragraph(" "));
+        document.add(new Paragraph(""));
+        document.add(new Paragraph("Question\t| Marks\t| Time Taken"));
+        document.add(new Paragraph("---------------------------"));
 
         for (String line : reportLines) {
             document.add(new Paragraph(line));

@@ -630,8 +630,10 @@ class ClientHandler extends Thread {
                     writer.print("Your answer: ");
                     writer.flush();
         
+                    long questionStartTime = System.currentTimeMillis();
                     String userAnswer = scanner.nextLine().trim();
-        
+                    long questionEndTime = System.currentTimeMillis();
+                    long timeTakenForQuestion = (questionEndTime - questionStartTime) / 1000;
                     // Check answer correctness and record attempt
                     boolean isCorrect = correctAnswer.equalsIgnoreCase(userAnswer);
                     recordAttempt(participantId, challengeId, questionId, attemptNumber, isCorrect, marks, System.currentTimeMillis() - startTime);
@@ -644,7 +646,6 @@ class ClientHandler extends Thread {
                     writer.println(feedback.toString());
                     writer.println();
 
-                    long timeTakenSeconds = (System.currentTimeMillis() - startTime) / 1000;
                     totalScore += (isCorrect ? marks : 0);
                     // Store question data
                     // String reportLine = "Question ID: " + questionId + "\n" +
@@ -657,7 +658,7 @@ class ClientHandler extends Thread {
                     //                 "Total Score: " + totalScore + "\n" +
                     //                 "\n";
                     // reportLines.add(reportLine);
-                    String reportLine = String.format("%s\t| %d\t| %d seconds", questionText, totalScore, timeTakenSeconds);
+                    String reportLine = String.format("%s\t| %d\t| %d seconds", questionText, totalScore, timeTakenForQuestion);
                     reportLines.add(reportLine);
                 }
         
@@ -683,8 +684,12 @@ class ClientHandler extends Thread {
             writer.println("Total Time Taken: " + totalTimeTakenSeconds + " seconds");
             writer.println("Total Score: " + totalScore);
             writer.flush();
+            // Provide challenge summary after all questions are attempted
+            generatePdfReport(username, challengeId, reportLines);
+            writer.println("Challenge completed. Summary has been sent to your email: "+ getEmailForParticipant(username));
+            sendEmailWithAttachment(getEmailForParticipant(username), "Challenge Report", "Here is your challenge report.", "reports/" + username + "_challenge_" + challengeId + ".pdf");
             
-        } catch (SQLException e) {
+        } catch (SQLException | DocumentException | MessagingException | IOException e) {
             e.printStackTrace();
             writer.println("Error during challenge attempt: " + e.getMessage());
         }
